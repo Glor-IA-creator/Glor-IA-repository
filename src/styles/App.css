@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400&display=swap');
+
+/* src/styles/App.css */
+.container-fluid {
+  margin: 0; /* Eliminar margen */
+  padding: 0; /* Eliminar padding */
+  display: flex; /* Usar flex para alinear sidebar y contenido */
+  height: 100vh; /* Asegúrate de que ocupe toda la altura de la ventana */
+}
+
+.content {
+  flex: 1; /* Toma todo el espacio restante */
+  padding: 0; /* Eliminar padding para ocupar todo el ancho */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrar horizontalmente */
+}
+
+
+
+.left-side {
+  background-color: #000000;
+  width: 360px; /* Ancho del sidebar */
+  min-height: 100vh; /* Altura mínima igual a la altura de la pantalla */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 50px; /* Espacio superior */
+}
+
+.content {
+  flex: 1; /* Toma todo el espacio restante */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px; /* Espaciado interno */
+}
+
+.bienvenida {
+  margin-top: 20px;
+  font-family: "Roboto Slab", serif;
+  font-size: 35px;
+  font-weight: 400;
+}
+
+.caja {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.box {
+  width: 250px;
+  height: 264px;
+  background-color: rgba(217, 217, 217, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+  padding: 20px;
+}
+
+.box h3 {
+  margin-top: -10px;
+  text-align: center;
+  width: 100%;
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.box p {
+  text-align: center;
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+}

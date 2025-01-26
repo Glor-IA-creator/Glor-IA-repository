@@ -1,0 +1,105 @@
+.general-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #252C5F; /* Color de fondo del navbar */
+  color: white;
+  padding: 10px 20px;
+  height: 60px;
+  width: 100vw; /* Ocupa todo el ancho de la pantalla */
+  position: fixed; /* Fija el navbar en la parte superior */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Asegura que el navbar esté por encima del contenido */
+  box-sizing: border-box;
+}
+
+.general-navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.general-navbar-logo {
+  height: 40px;
+  margin-right: 10px;
+}
+
+.general-navbar-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.general-navbar-center {
+  display: flex;
+  gap: 20px;
+}
+
+.general-navbar-link {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.general-navbar-link:hover {
+  text-decoration: underline;
+}
+
+.general-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.general-navbar-icon {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.general-logout-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.general-logout-icon {
+  margin-right: 5px;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .general-navbar-center {
+    display: none; /* Oculta los enlaces en pantallas pequeñas */
+  }
+
+  .general-navbar-title {
+    font-size: 1rem;
+  }
+
+  .general-navbar-logo {
+    height: 30px; /* Ajusta el tamaño del logo */
+  }
+
+  .general-logout-button {
+    font-size: 0.9rem; /* Ajusta el tamaño del texto del botón */
+  }
+}
+
+@media (max-width: 480px) {
+  .general-navbar {
+    flex-direction: column;
+    padding: 10px;
+    height: auto; /* Permite que el navbar se expanda verticalmente en pantallas muy pequeñas */
+  }
+
+  .general-navbar-left,
+  .general-navbar-right {
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

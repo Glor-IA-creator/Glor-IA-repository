@@ -1,0 +1,89 @@
+/* Layout general */
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  transition: width 0.3s ease;
+  overflow: hidden;
+}
+
+.layout.sidebar-open .navbar {
+  margin-left: 250px; /* Ajuste del margen cuando el Sidebar está abierto */
+}
+
+.layout.sidebar-closed .navbar {
+  margin-left: 60px; /* Ajuste del margen cuando el Sidebar está cerrado */
+}
+
+/* Main content */
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  transition: margin-left 0.3s ease;
+}
+
+/* Navbar */
+.navbar {
+  height: 58px;
+  background-color: #61B7E4;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  transition: margin-left 0.3s ease;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.icon {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.logout-button-container {
+  margin-left: auto; /* Empuja el botón hacia la derecha */
+}
+
+.logout-button {
+  background-color: rgba(77, 91, 197, 1);
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 9999px; /* Ovalado */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: rgba(55, 65, 173, 1); /* Color de fondo en hover */
+}
+
+/* Ajustes para dispositivos pequeños */
+@media (max-width: 768px) {
+  .navbar {
+    margin-left: 0;
+    padding: 0 10px;
+    justify-content: center;
+  }
+
+  .navbar-content {
+    justify-content: center;
+  }
+
+  .logout-button {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    border-radius: 50px;
+  }
+}

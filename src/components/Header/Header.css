@@ -1,0 +1,17 @@
+/* src/styles/Header.css */
+.app-header {
+    position: fixed; /* Fijar la posición para que siempre esté en la parte superior */
+    top: 0; /* Alineación superior */
+    left: 0; /* Alineación izquierda */
+    width: 100%; /* Ocupa todo el ancho */
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+  }
+  
+  .header-background {
+    background-color: #add8e6; /* Color celeste */
+    padding: 10px; /* Espaciado interno */
+    display: flex; /* Usamos flexbox para alinear el contenido */
+    justify-content: flex-end; /* Alinear el botón a la derecha */
+    align-items: center; /* Centrar verticalmente */
+  }
+  
