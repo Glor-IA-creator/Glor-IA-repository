@@ -1,0 +1,110 @@
+/* src/pages/EvaluationPage/EvaluationPage.css */
+
+.evaluation-page-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .content-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .evaluation-description {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .steps-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    margin-bottom: 40px;
+  }
+  
+  /* Línea interlineada */
+  .steps-container::before {
+    content: '';
+    position: absolute;
+    top: 35px; /* Alineado con el centro de los números */
+    left: 10%;
+    right: 10%;
+    border-top: 2px dashed #dcdcdc;
+    z-index: 0;
+  }
+  
+  .step {
+    background-color: #f5f8fb;
+    border-radius: 8px;
+    padding: 20px;
+    width: 100px;
+    text-align: center;
+    position: relative;
+    z-index: 1; /* Para estar por encima de la línea */
+  }
+  
+  .step-number {
+    background-color: #5dade2;
+    color: white;
+    font-size: 1.5rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2; /* Para estar encima de la línea y el cuadro */
+  }
+  
+  .step-text {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 10px;
+  }
+  
+  .start-evaluation-button {
+    background-color: #5dade2;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+  }
+  
+  .start-evaluation-button:hover {
+    background-color: #3498db;
+  }
+  

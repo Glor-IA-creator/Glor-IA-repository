@@ -1,0 +1,50 @@
+.chat-patient-details {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Oculto inicialmente */
+    width: 300px;
+    height: 100%;
+    background-color: #f9f9f9;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out; /* Animación de deslizamiento */
+    z-index: 1000;
+  }
+  
+  .chat-patient-details.visible {
+    right: 0; /* Aparece desde la derecha */
+  }
+  
+  .chat-patient-details-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .patient-photo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+  
+  .chat-patient-details-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+  }
+  
+  .chat-patient-details-actions button {
+    padding: 10px;
+    background-color: #4d5bc5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  .chat-patient-details-actions button:hover {
+    background-color: #3c49a5;
+  }
+  

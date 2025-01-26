@@ -1,0 +1,15 @@
+/* src/components/Pagination/Pagination.css */
+.pagination-button {
+    background: none;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    font-size: 18px;
+  }
+  
+  .pagination-button:hover {
+    color: #555;
+  }
+  
