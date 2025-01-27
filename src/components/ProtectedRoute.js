@@ -6,11 +6,14 @@ const ProtectedRoute = ({ children, roles }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null); // Inicializa como `null` para manejar el estado inicial
   const [userRole, setUserRole] = useState(null);
 
+  // Base URL del backend desde las variables de entorno
+  const API_URL = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       axios
-        .get('http://localhost:5000/api/usuarios/me', {
+        .get(`${API_URL}/api/usuarios/me`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -24,7 +27,7 @@ const ProtectedRoute = ({ children, roles }) => {
     } else {
       setIsAuthenticated(false);
     }
-  }, []);
+  }, [API_URL]);
 
   // Mientras verifica, no muestra nada
   if (isAuthenticated === null) {
