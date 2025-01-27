@@ -10,12 +10,15 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Base URL del backend desde las variables de entorno
+  const API_URL = process.env.REACT_APP_API_URL;
+
   // Verificar si el usuario ya está autenticado
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       axios
-        .get('http://localhost:5000/api/usuarios/me', {
+        .get(`${API_URL}/api/usuarios/me`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -34,12 +37,12 @@ const Login = () => {
           localStorage.removeItem('token'); // Elimina token inválido
         });
     }
-  }, [navigate]);
+  }, [navigate, API_URL]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/usuarios/login', {
+      const response = await axios.post(`${API_URL}/api/usuarios/login`, {
         email,
         password,
       });
