@@ -1,40 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { FaFileAlt } from 'react-icons/fa';
+import { FaFileAlt, FaFileMedical } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import Modal from '../HistoryTable/Modal';
 import './StudentTable.css';
 
-const StudentsTable = () => {
+const StudentsTable = ({ selectedYear, selectedSection }) => {
   const [students, setStudents] = useState([]);
   const [error, setError] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalData, setModalData] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchList = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log('Token:', token); // Depuración: verifica el token
 
-        const url = `${process.env.REACT_APP_API_URL}/api/estudiantes/listado`;
-        console.log('URL:', url); // Depuración: verifica la URL
+        // Generar URL con filtros
+        let url = `${process.env.REACT_APP_API_URL}/api/estudiantes/listado`;
+
+        const queryParams = new URLSearchParams();
+        if (selectedYear) queryParams.append("year", selectedYear);
+        if (selectedSection) queryParams.append("section", selectedSection); // Sección ahora se envía correctamente
+        
+        if (queryParams.toString()) {
+          url += `?${queryParams.toString()}`;
+        }
 
         const response = await fetch(url, {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log('Response status:', response.status); // Depuración: verifica el estado de la respuesta
-        const responseText = await response.text();
-        console.log('Response text:', responseText); // Depuración: verifica el texto de la respuesta
+        if (!response.ok) throw new Error('Error al cargar los estudiantes');
 
-        if (!response.ok) {
-          throw new Error('Error al cargar el listado de alumnos');
-        }
-
-        const data = JSON.parse(responseText);
+        const data = await response.json();
+        
         setStudents(data);
       } catch (err) {
-        console.error('Error al cargar la lista:', err.message);
+        console.error('Error en fetch:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -42,15 +48,17 @@ const StudentsTable = () => {
     };
 
     fetchList();
-  }, []);
+  }, [selectedYear, selectedSection]); // Se ejecuta cuando cambian los filtros
 
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
+  // Función para abrir el modal con los datos del estudiante seleccionado
+  const handleOpenModal = (student) => {
+    setSelectedStudent(student);
+    setModalData(student.fichasClinicas || []); // Asegura que `fichasClinicas` sea un array válido
+    setModalVisible(true);
+  };
 
-  if (error) {
-    return <div className="error-message">Error: {error}</div>;
-  }
+  if (loading) return <div>Cargando...</div>;
+  if (error) return <div className="error-message">Error: {error}</div>;
 
   return (
     <div className="students-table-container">
@@ -72,12 +80,39 @@ const StudentsTable = () => {
               <td>{student.sesiones}</td>
               <td>{student.pacientes}</td>
               <td>
-                <FaFileAlt className="icon" />
+                <FaFileAlt className="icon" onClick={() => handleOpenModal(student)} />
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {modalVisible && selectedStudent && (
+        <Modal onClose={() => setModalVisible(false)}>
+          <h3>historial de sesiones {selectedStudent.nombre}</h3>
+          <ul className="modal-list">
+            {modalData.map((ficha, index) => (
+              <li key={index} className="modal-list-item">
+                {ficha.date}{' '}
+                <FaFileMedical
+                  className="file-icon-small"
+                  onClick={() =>
+                    navigate('/alumno/chat', {
+                      state: {
+                        student: {
+                          id: selectedStudent.id,
+                          name: selectedStudent.nombre,
+                        },
+                        threadId: ficha.id,
+                      },
+                    })
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        </Modal>
+      )}
     </div>
   );
 };
