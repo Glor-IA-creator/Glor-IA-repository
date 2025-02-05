@@ -1,12 +1,12 @@
 // src/pages/Docentes/EstadisticasDocentes/EstadisticasDocentes.js
 import React from 'react';
-import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
-import './EstadisticasDocentes.css';
+import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
+import './EstadisticasGeneral.css';
 
-const EstadisticasDocentes = () => {
+const EstadisticasGeneral = () => {
   return (
     <div className="estadisticas-docentes-container">
-      <AdminNavbar />
+      <GeneralNavbar />
       <div className="content">
         <table className="statistics-table">
           <thead>
@@ -49,4 +49,4 @@ const EstadisticasDocentes = () => {
   );
 };
 
-export default EstadisticasDocentes;
+export default EstadisticasGeneral;

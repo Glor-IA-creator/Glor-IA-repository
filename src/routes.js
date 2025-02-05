@@ -10,6 +10,9 @@ import HomeDocentes from './pages/Docentes/HomeDocentes/HomeDocentes';
 import AlumnosDocentes from './pages/Docentes/AlumnosDocentes/AlumnosDocentes';
 import EstadisticasDocentes from './pages/Docentes/EstadisticasDocentes/EstadisticasDocentes';
 import HomeGeneral from './pages/General/HomePage/HomeGeneral';
+import EstadisticasGeneral from './pages/General/EstadisticasGeneral/EstadisticasGeneral';
+import UsuariosGeneral from './pages/General/UsuariosGeneral/UsuariosGeneral';
+import SeccionesGeneral from './pages/General/SeccionesGeneral/SeccionesGeneral';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const RoutesComponent = () => {
@@ -93,6 +96,33 @@ const RoutesComponent = () => {
           element={
             <ProtectedRoute roles={['admin']}>
               <HomeGeneral />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/general/estadisticas"
+          element={
+            <ProtectedRoute roles={['admin']}>
+              <EstadisticasGeneral />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/general/secciones"
+          element={
+            <ProtectedRoute roles={['admin']}>
+              <SeccionesGeneral />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/general/usuarios"
+          element={
+            <ProtectedRoute roles={['admin']}>
+              <UsuariosGeneral />
             </ProtectedRoute>
           }
         />

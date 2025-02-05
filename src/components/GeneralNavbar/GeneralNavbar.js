@@ -24,7 +24,8 @@ const GeneralNavbar = () => {
       <div className="navbar-center">
         <a href="/general/home" className="navbar-link">Home</a>
         <a href="/general/usuarios" className="navbar-link">Usuarios</a>
-        <a href="/general/configuracion" className="navbar-link">Configuración</a>
+        <a href="/general/secciones" className="navbar-link">Secciones</a>
+        <a href="/general/estadisticas" className="navbar-link">Estadisticas</a>
       </div>
       <div className="navbar-right">
         <FaUserCircle className="navbar-icon" />
