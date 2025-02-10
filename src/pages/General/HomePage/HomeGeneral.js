@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
+import axios from 'axios';
 import './HomeGeneral.css';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const HomeGeneral = () => {
   const [userName, setUserName] = useState('');
-  const [lastLogin, setLastLogin] = useState('');
+  const [lastLogin, setLastLogin] = useState('Fecha desconocida');
 
   useEffect(() => {
-    const fetchUserData = () => {
+    const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -15,15 +18,24 @@ const HomeGeneral = () => {
           return;
         }
 
-        // Decodificar el token para obtener el nombre y la última fecha de inicio de sesión
-        const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decodifica el payload del token
-        const nameFromToken = decodedToken.nombre; // Cambia esto según la estructura del token
-        const lastLoginFromToken = decodedToken.lastLogin || 'Fecha desconocida'; // Cambia según tu token
+        // ✅ Obtener datos reales del usuario desde la API
+        const response = await axios.get(`${API_URL}/api/usuarios/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-        setUserName(nameFromToken);
-        setLastLogin(lastLoginFromToken);
+        const { nombre, ultimo_acceso } = response.data;
+
+        setUserName(nombre);
+
+        // ✅ Si existe `ultimo_acceso`, formatearlo
+        if (ultimo_acceso) {
+          const date = new Date(ultimo_acceso);
+          const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+          setLastLogin(formattedDate);
+        }
+
       } catch (error) {
-        console.error('Error al obtener los datos del usuario desde el token:', error);
+        console.error('Error al obtener los datos del usuario:', error);
       }
     };
 
