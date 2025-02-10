@@ -1,81 +1,134 @@
-/* src/pages/Docentes/AlumnosDocentes/AlumnosDocentes.css */
-
 .alumnos-docentes-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh; /* Ocupa toda la altura de la pantalla */
-    padding-top: 60px; /* Espacio para el navbar */
-    overflow: hidden; /* Evita scroll en la página */
-  }
-  
-  .content {
-    display: flex;
-    flex-direction: column;
-    flex: 1; /* Permite que el contenedor de contenido ocupe el espacio restante */
-    padding: 20px;
-    width: 90%; /* Ajusta el ancho para que ocupe casi toda la pantalla */
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .filters {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  
-  .filter-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .filter-item label {
-    font-size: 1rem;
-    color: #333;
-  }
-  
-  .filter-item select {
-    padding: 8px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  /* Ajustes para el contenedor de la tabla */
-  .students-table-container {
-    flex: 1; /* Permite que la tabla ocupe el espacio restante en content */
-    overflow-y: auto; /* Activa el desplazamiento solo dentro de la tabla */
-    width: 100%; /* Ocupa todo el ancho disponible */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
-    border-radius: 8px;
-  }
-  
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin-top: 20px;
-  }
-  
-  .pagination-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
-  .pagination-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .pagination-info {
-    font-size: 1rem;
-    color: #333;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-top: 60px; /* Espacio para el navbar */
+  overflow: hidden;
+  background-color: #f4f6f9;
+}
+
+
+
+/* 🔹 Filtros */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #333;
+}
+
+.filter-item select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* 🔹 Tabla de estudiantes */
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.students-table th,
+.students-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.students-table th {
+  background-color: #8590F5;
+  color: white;
+  font-weight: bold;
+}
+
+.students-table tr:hover {
+  background-color: #f0f8ff;
+}
+
+/* 🔹 Icono de historial */
+.chat-icon {
+  font-size: 20px;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.chat-icon:hover {
+  color: #0056b3;
+}
+
+/* 🔹 Paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination-button {
+  background-color: #8590F5;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #333;
+}
+
+/* 🔹 Modal de Historial */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.close-icon {
+  cursor: pointer;
+  color: red;
+  font-size: 20px;
+}
+
+.close-icon:hover {
+  color: darkred;
+}
+

@@ -10,60 +10,62 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Base URL del backend desde las variables de entorno
   const API_URL = process.env.REACT_APP_API_URL;
 
-  // Verificar si el usuario ya está autenticado
+  // ✅ Verificar si el usuario ya está autenticado
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token) {
-      axios
-        .get(`${API_URL}/api/usuarios/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((response) => {
-          const { rol } = response.data;
+    if (!token) return;
 
-          // Verifica que la ruta actual no coincida antes de redirigir
-          if (rol === 'estudiante' && window.location.pathname !== '/alumno/home') {
-            navigate('/alumno/home', { replace: true });
-          } else if (rol === 'profesor' && window.location.pathname !== '/admin/home') {
-            navigate('/admin/home', { replace: true });
-          } else if (rol === 'admin' && window.location.pathname !== '/general/home') {
-            navigate('/general/home', { replace: true });
-          }
-        })
-        .catch(() => {
-          localStorage.removeItem('token'); // Elimina token inválido
-        });
-    }
+    axios
+      .get(`${API_URL}/api/usuarios/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        const { rol } = response.data;
+        redirigirSegunRol(rol);
+      })
+      .catch(() => {
+        localStorage.removeItem('token'); 
+      });
   }, [navigate, API_URL]);
 
+  // ✅ Función para redirigir según el rol
+  const redirigirSegunRol = (rol) => {
+    if (rol === 'estudiante') navigate('/alumno/home', { replace: true });
+    else if (rol === 'profesor') navigate('/admin/home', { replace: true });
+    else if (rol === 'admin') navigate('/general/home', { replace: true });
+    else setError('⚠️ Rol no reconocido. Contacte con el administrador.');
+  };
+
+  // ✅ Manejo del login con validaciones
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
       const response = await axios.post(`${API_URL}/api/usuarios/login`, {
         email,
         password,
       });
 
-      const { token, rol } = response.data;
+      const { token, rol, enabled, ultimo_acceso } = response.data;
 
-      // Guardamos el token en localStorage
-      localStorage.setItem('token', token);
-
-      // Redirigimos según el rol
-      if (rol === 'estudiante') {
-        navigate('/alumno/home', { replace: true });
-      } else if (rol === 'profesor') {
-        navigate('/admin/home', { replace: true });
-      } else if (rol === 'admin') {
-        navigate('/general/home', { replace: true });
-      } else {
-        setError('Rol no reconocido. Contacte con el administrador.');
+      // ✅ Bloquear acceso si el usuario está deshabilitado
+      if (!enabled) {
+        setError('⚠️ Tu cuenta está deshabilitada. Contacta con un administrador.');
+        return;
       }
+
+      // ✅ Guardar datos en localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('ultimo_acceso', ultimo_acceso || new Date().toISOString());
+
+      // ✅ Redirigir según el rol
+      redirigirSegunRol(rol);
+
     } catch (err) {
-      setError('Credenciales inválidas');
+      setError(err.response?.data?.message || '❌ Credenciales inválidas');
     }
   };
 
