@@ -51,7 +51,7 @@ const EstadisticasGeneral = () => {
             });
 
             if (!chatResponse.ok) {
-              return { ...user, fichas: 0, iaConsultadas: [] };
+              return { ...user, fichas: 0, iaConsultadas: [], minutosUso: user.minutos_uso || 0 };
             }
 
             const chatData = await chatResponse.json();
@@ -65,6 +65,7 @@ const EstadisticasGeneral = () => {
               ...user,
               fichas: threads.length,
               iaConsultadas,
+              minutosUso: user.minutos_uso || 0, // ✅ Aseguramos que minutos de uso se obtienen
             };
           }));
 
@@ -75,6 +76,7 @@ const EstadisticasGeneral = () => {
           setFilteredUsers([]);
         }
       } catch (error) {
+        console.error("Error al obtener usuarios:", error);
         setUsers([]);
         setFilteredUsers([]);
       }
@@ -102,7 +104,7 @@ const EstadisticasGeneral = () => {
       Nombre: user.nombre,
       Correo: user.email,
       Perfil: user.id_rol === 3 ? "Estudiante" : "Docente",
-      Sesiones: user.sesiones || 0,
+      "Minutos de Uso": user.minutosUso || 0, // ✅ Exportación correcta de minutos de uso
       Pacientes: user.pacientes || 0,
       Fichas: user.fichas || 0,
       'IA Consultadas': user.iaConsultadas.join(', ')
@@ -143,7 +145,7 @@ const EstadisticasGeneral = () => {
               <th>Nombre</th>
               <th>Correo</th>
               <th>Perfil</th>
-              <th>Sesiones</th>
+              <th>Minutos de Uso</th> {/* ✅ Cambio aquí */}
               <th>Pacientes</th>
               <th>Fichas</th>
               <th>IA Consultadas</th>
@@ -156,7 +158,7 @@ const EstadisticasGeneral = () => {
                   <td>{user.nombre}</td>
                   <td>{user.email}</td>
                   <td>{user.id_rol === 3 ? "Estudiante" : "Docente"}</td>
-                  <td>{user.sesiones || 0}</td>
+                  <td>{user.minutosUso || 0} min</td> {/* ✅ Se muestran los minutos de uso */}
                   <td>{user.pacientes || 0}</td>
                   <td>{user.fichas || 0}</td>
                   <td className="ia-consultadas">
@@ -179,19 +181,11 @@ const EstadisticasGeneral = () => {
         </table>
 
         <div className="pagination">
-          <button 
-            className="pagination-button" 
-            disabled={currentPage === 1} 
-            onClick={() => setCurrentPage(currentPage - 1)}
-          >
+          <button className="pagination-button" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
             Anterior
           </button>
           <span className="pagination-info">Página {currentPage} de {totalPages || 1}</span>
-          <button 
-            className="pagination-button" 
-            disabled={currentPage === totalPages || totalPages === 0} 
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
+          <button className="pagination-button" disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>
             Siguiente
           </button>
         </div>

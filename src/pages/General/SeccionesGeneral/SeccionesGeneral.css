@@ -218,7 +218,7 @@ input:checked + .slider:before {
 }
 
 .modal-button.confirm {
-  background-color: #d35a5a;
+  background-color: #8590F5;
   color: white;
 }
 
@@ -227,7 +227,7 @@ input:checked + .slider:before {
 }
 
 .modal-button.cancel {
-  background-color: #8590F5;
+  background-color: #d35a5a;
   color: white;
 }
 
