@@ -35,9 +35,8 @@ const EstadisticasDocentes = () => {
         const data = await response.json();
 
         if (Array.isArray(data)) {
-          // Procesar cada estudiante y agregar información de threads
+          // Procesar cada estudiante y agregar información de chats
           const processedStudents = await Promise.all(data.map(async (student) => {
-            const token = localStorage.getItem('token');
             const chatResponse = await fetch(`${API_URL}/api/estudiantes/${student.id_usuario}/chats`, {
               method: 'GET',
               headers: {
@@ -47,9 +46,8 @@ const EstadisticasDocentes = () => {
             });
 
             const chatData = await chatResponse.json();
-
             const threads = Array.isArray(chatData) ? chatData : [];
-            
+
             // Obtener nombres de asistentes únicos
             const uniqueAssistants = [...new Set(threads.map(t => t.id_asistente))];
             const iaConsultadas = uniqueAssistants
@@ -60,6 +58,7 @@ const EstadisticasDocentes = () => {
               ...student,
               fichas: threads.length, // Número total de hilos
               iaConsultadas, // Nombres de IA consultadas
+              minutosUso: student.minutos_uso || 0, // ✅ Mostrar minutos de uso correctamente
             };
           }));
 
@@ -88,7 +87,7 @@ const EstadisticasDocentes = () => {
             <tr>
               <th>Estudiante</th>
               <th>Ingresos</th>
-              <th>Horas</th>
+              <th>Minutos de Uso</th> {/* ✅ Mostrar minutos en vez de horas */}
               <th>Pacientes</th>
               <th>Fichas</th>
               <th>IA Consultadas</th>
@@ -100,7 +99,7 @@ const EstadisticasDocentes = () => {
                 <tr key={student.id_usuario}>
                   <td>{student.nombre}</td>
                   <td>{student.sesiones}</td>
-                  <td>--</td> {/* Si hay un campo de horas, reemplazar aquí */}
+                  <td>{student.minutosUso}</td> {/* ✅ Se muestra correctamente los minutos */}
                   <td>{student.pacientes}</td>
                   <td>{student.fichas}</td> {/* ✅ Número de fichas (hilos) */}
                   <td className="ia-consultadas">
