@@ -1,8 +1,8 @@
 import React from 'react';
-import { FaFileAlt, FaComments, FaClipboard } from 'react-icons/fa';
+import { FaFileAlt, FaComments, FaPhotoVideo } from 'react-icons/fa';
 import './PatientCard.css';
 
-const PatientCard = ({ id, name, age, location, image, onStartConversation }) => {
+const PatientCard = ({ id, name, age, location, image, onStartConversation, onContinueConversation, onViewImage }) => {
   return (
     <div className="patient-card">
       <img src={image} alt={name} className="patient-image" />
@@ -10,17 +10,14 @@ const PatientCard = ({ id, name, age, location, image, onStartConversation }) =>
       <p>Edad: {age} años</p>
       <p>{location}</p>
       <div className="patient-actions">
-        <button className="action-button">
-          <FaFileAlt className="button-icon" /> Ver Presentación
+        <button className="action-button" onClick={onContinueConversation}>
+          <FaFileAlt className="button-icon" /> Retomar conversación
         </button>
-        <button
-          className="action-button"
-          onClick={() => onStartConversation(id)} // Llama al evento con el ID del paciente
-        >
+        <button className="action-button" onClick={() => onStartConversation(id)}>
           <FaComments className="button-icon" /> Iniciar conversación
         </button>
-        <button className="action-button">
-          <FaClipboard className="button-icon" /> Ver ficha clínica
+        <button className="action-button" onClick={onViewImage}>
+          <FaPhotoVideo className="button-icon" /> Ver foto del paciente
         </button>
       </div>
     </div>

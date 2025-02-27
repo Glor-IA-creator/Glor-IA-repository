@@ -143,10 +143,12 @@ const AlumnosDocentes = () => {
         </div>
       </div>
 
+      {/* Pasamos la prop studentName para que el modal sepa quién es el estudiante */}
       {showModal && (
-        <ChatHistoryModal 
-          chats={chatHistory} 
-          onClose={() => setShowModal(false)} 
+        <ChatHistoryModal
+          chats={chatHistory}
+          onClose={() => setShowModal(false)}
+          studentName={selectedStudent?.nombre} 
         />
       )}
     </div>

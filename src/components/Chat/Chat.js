@@ -20,7 +20,7 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const patientDetailsRef = useRef(null);
 
-  // Fetch messages for the given thread
+  // Fetch messages for the given thread (ya existente)
   const fetchMessages = useCallback(async (threadId) => {
     try {
       const token = localStorage.getItem('token');
@@ -56,7 +56,51 @@ const Chat = () => {
     }
   }, [assistant]);
 
-  // Fetch the last thread if no threadId is provided
+  /* ────────────────────────────────────────────── */
+  /* AGREGADOS PARA CARGAR EL ÚLTIMO HILO DEL ASISTENTE */
+  /* ────────────────────────────────────────────── */
+  // Función para obtener el último hilo del asistente
+  const fetchLastThreadForAssistant = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/hilos/ultimo-hilo-asistente?assistantId=${assistantFromState?.id}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar el último hilo del asistente.');
+      }
+
+      const data = await response.json();
+      setAssistant({
+        id: data.patientId,
+        name: data.name,
+        image: data.image,
+        description: data.description,
+      });
+      setThreadId(data.threadId);
+      fetchMessages(data.threadId);
+    } catch (error) {
+      console.error('Error al obtener el último hilo del asistente:', error.message);
+      alert('No se pudo cargar el último hilo del asistente.');
+      navigate('/');
+    }
+  };
+
+  // Nuevo useEffect para cargar el último hilo del asistente si el usuario llegó con uno
+  useEffect(() => {
+    if (!threadId && assistantFromState) {
+      fetchLastThreadForAssistant();
+    }
+  }, [threadId, assistantFromState]);
+  /* ────────────────────────────────────────────── */
+  /* FIN DE LOS AGREGADOS */
+  /* ────────────────────────────────────────────── */
+
+  // Fetch the last thread if no threadId is provided (ya existente)
   useEffect(() => {
     const fetchLastThread = async () => {
       try {

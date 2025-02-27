@@ -1,4 +1,3 @@
-// src/pages/PatientsPage/PatientsPage.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar/Sidebar';
@@ -60,8 +59,9 @@ const patients = [
 
 const PatientsPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [loading, setLoading] = useState(false); // Estado de carga
-  const [error, setError] = useState(null); // Estado de error
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null); // Estado para manejar la imagen en el modal
   const navigate = useNavigate();
 
   const toggleSidebar = () => {
@@ -73,7 +73,7 @@ const PatientsPage = () => {
     setError(null);
 
     try {
-      const token = localStorage.getItem('token'); // Recupera el token desde el almacenamiento local
+      const token = localStorage.getItem('token');
 
       console.log("Enviando solicitud al backend con patientId:", patient.id);
 
@@ -81,7 +81,7 @@ const PatientsPage = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ patientId: patient.id }),
       });
@@ -93,7 +93,6 @@ const PatientsPage = () => {
       const data = await response.json();
       console.log("Hilo creado:", data);
 
-      // Navegar al componente Chat pasando datos del asistente
       navigate('/alumno/chat', {
         state: {
           assistant: {
@@ -112,6 +111,41 @@ const PatientsPage = () => {
     }
   };
 
+  // Nuevo: Función para retomar la conversación
+  const handleContinueConversation = async (patient) => {
+    try {
+      const token = localStorage.getItem('token');
+      console.log("Retomando conversación para:", patient.id);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/hilos/ultimo-hilo-asistente?assistantId=${patient.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Error en el servidor: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Último hilo obtenido:", data);
+      navigate('/alumno/chat', {
+        state: {
+          assistant: {
+            id: patient.id,
+            name: patient.name,
+            image: patient.image,
+          },
+          threadId: data.threadId,
+        },
+      });
+    } catch (err) {
+      console.error("Error al retomar la conversación:", err.message);
+      alert(err.message || "Error desconocido.");
+    }
+  };
+
   return (
     <div className={`patients-page-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
@@ -127,14 +161,25 @@ const PatientsPage = () => {
                 age={patient.age}
                 location={patient.location}
                 image={patient.image}
-                onStartConversation={() => handleStartConversation(patient)} // Pasar la función específica
+                onStartConversation={() => handleStartConversation(patient)}
+                onContinueConversation={() => handleContinueConversation(patient)}
+                onViewImage={() => setSelectedImage(patient.image)}
               />
             ))}
           </div>
         </div>
-        {/* Mostrar errores */}
         {loading && <p>Creando hilo...</p>}
         {error && <p className="error">{error}</p>}
+
+        {selectedImage && (
+          <div className="modal-overlay" onClick={() => setSelectedImage(null)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <img src={selectedImage} alt="Paciente" className="modal-image" />
+              <button className="close-button" onClick={() => setSelectedImage(null)}>✖</button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
