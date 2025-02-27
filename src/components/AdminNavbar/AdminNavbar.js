@@ -27,7 +27,6 @@ const AdminNavbar = () => {
         <a href="/admin/estadisticas" className="navbar-link">Estadísticas</a>
       </div>
       <div className="navbar-right">
-        <FaUserCircle className="navbar-icon" />
         <button className="logout-button" onClick={handleLogout}>
           <FaSignOutAlt className="logout-icon" /> Cerrar sesión
         </button>

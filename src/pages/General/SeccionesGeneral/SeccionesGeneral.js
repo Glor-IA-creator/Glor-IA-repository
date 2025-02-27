@@ -68,10 +68,7 @@ const SeccionesGeneral = () => {
       return;
     }
 
-    if (![1, 2].includes(parsedSemester)) {
-      alert("⚠️ El semestre debe ser 1 o 2.");
-      return;
-    }
+ 
 
     if (!window.confirm(`¿Seguro que deseas agregar la sección "${newSectionName}" del año ${parsedYear}, semestre ${parsedSemester}?`)) {
       return;
@@ -183,7 +180,7 @@ const SeccionesGeneral = () => {
             <h3>Agregar Sección</h3>
             <input type="text" placeholder="Nombre de la sección" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)} />
             <input type="number" placeholder="Año" value={newSectionYear} onChange={(e) => setNewSectionYear(e.target.value)} />
-            <input type="number" placeholder="Semestre (1 o 2)" value={newSectionSemester} onChange={(e) => setNewSectionSemester(e.target.value)} />
+            <input type="number" placeholder="Semestre" value={newSectionSemester} onChange={(e) => setNewSectionSemester(e.target.value)} />
             <div className="modal-actions">
               <button className="modal-button confirm" onClick={agregarSeccion}>Agregar</button>
               <button className="modal-button cancel" onClick={() => setShowAddModal(false)}>Cancelar</button>

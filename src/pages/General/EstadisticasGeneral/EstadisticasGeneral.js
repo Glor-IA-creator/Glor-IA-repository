@@ -145,9 +145,9 @@ const EstadisticasGeneral = () => {
               <th>Nombre</th>
               <th>Correo</th>
               <th>Perfil</th>
-              <th>Minutos de Uso</th> {/* ✅ Cambio aquí */}
+              <th>Minutos de Uso</th> {/* ✅ Minutos Check */}
               <th>Pacientes</th>
-              <th>Fichas</th>
+              <th>Ingresos</th>
               <th>IA Consultadas</th>
             </tr>
           </thead>

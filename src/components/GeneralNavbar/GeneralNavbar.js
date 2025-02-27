@@ -28,7 +28,6 @@ const GeneralNavbar = () => {
         <a href="/general/estadisticas" className="navbar-link">Estadisticas</a>
       </div>
       <div className="navbar-right">
-        <FaUserCircle className="navbar-icon" />
         <button className="logout-button" onClick={handleLogout}>
           <FaSignOutAlt className="logout-icon" /> Cerrar sesión
         </button>
