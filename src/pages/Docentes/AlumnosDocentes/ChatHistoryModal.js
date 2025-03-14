@@ -1,87 +1,111 @@
 import React, { useState } from 'react';
 import { FaFileDownload, FaEye, FaTimes } from 'react-icons/fa';
-import { jsPDF } from 'jspdf';
+import pdfMake from 'pdfmake/build/pdfmake';
+import { vfs } from 'pdfmake/build/vfs_fonts'; // VFS con fuente Roboto por defecto
 import './ChatHistoryModal.css';
+
+// Asignamos las fuentes virtuales (Roboto) que vienen por defecto
+pdfMake.vfs = vfs;
 
 const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatContent, setChatContent] = useState([]);
   const [assistantName, setAssistantName] = useState('');
+  // Se prioriza studentName; en su defecto se obtiene el nombre desde la API en data.user.name
+  const [pdfUserName, setPdfUserName] = useState('Usuario');
 
-  // Función para descargar en PDF con nombre: chat_<Estudiante>_<Asistente>_<Fecha>.pdf
-  const handleDownload = (chat) => {
-    // Obtenemos el nombre del usuario desde localStorage (o usa un valor por defecto)
-    const userName = localStorage.getItem('username') || 'Usuario';
-  
-    // Convertimos la fecha de creación a un formato legible (dd-mm-yyyy)
-    const dateObj = new Date(chat.fecha_creacion);
-    const dateStr = dateObj.toLocaleDateString().replace(/\//g, '-');
-  
-    // Inicializamos jsPDF
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'pt',
-      format: 'letter'
-    });
-  
-    // Configuración de márgenes y dimensiones
-    const x = 40;
-    let y = 40;
-    const maxWidth = 500;
-    const lineHeight = 16;
-  
-    // Iteramos sobre cada mensaje para dibujar su fondo y texto
-    chatContent.forEach((msg) => {
-      const sender = msg.role === 'user' ? 'Usuario:' : assistantName + ':';
-      const text = sender + ' ' + msg.content;
-      const lines = doc.splitTextToSize(text, maxWidth);
-      const blockHeight = lines.length * lineHeight + 4;
-  
-      // Seleccionar color de fondo pastel según el rol
-      if (msg.role === 'user') {
-        doc.setFillColor(173, 216, 230); // Azul pastel
-      } else {
-        doc.setFillColor(255, 182, 193); // Rosa pastel
-      }
-  
-      // Dibujar el rectángulo de fondo
-      doc.rect(x - 2, y - 2, maxWidth + 4, blockHeight, 'F');
-      // Establecer el color del texto en negro y dibujar el mensaje
-      doc.setTextColor(0, 0, 0);
-      doc.text(lines, x, y);
-  
-      // Incrementar la posición y para el siguiente bloque, con un margen
-      y += blockHeight + 10;
-    });
-  
-    // Generar el nombre del archivo: chat_<usuario>_<asistente>_<fecha>.pdf
-    const fileName = `chat_${userName}_${assistantName}_${dateStr}.pdf`;
-    doc.save(fileName);
-  };
-  
-  // Función para obtener el contenido de cada chat
-  const fetchChatContent = async (threadId, assistantId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/chat/obtener-mensajes?threadId=${threadId}`, {
+  // Función genérica para obtener los mensajes y la info asociada del API
+  const fetchChatMessages = async (threadId) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(
+      `${process.env.REACT_APP_API_URL}/api/chat/obtener-mensajes?threadId=${threadId}`,
+      {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-      });
-      const data = await response.json();
-      if (data.messages && data.messages.length > 0) {
-        setChatContent(data.messages);
-      } else {
-        setChatContent([{ role: 'info', content: 'No hay contenido disponible.' }]);
       }
-      // Suponemos que en "chats" tienes la propiedad "assistantName"
-      // Si no existe, usamos "Asistente" por defecto
-      setAssistantName(chats.find(chat => chat.id_thread === threadId)?.assistantName || 'Asistente');
+    );
+    return response.json();
+  };
+
+  // Al previsualizar, obtenemos los mensajes y la info (assistant y user)
+  const fetchChatContent = async (threadId) => {
+    try {
+      const data = await fetchChatMessages(threadId);
+      if (data.messages && data.messages.length > 0) {
+        // Invertimos para que se muestren en orden natural (primeros primero)
+        const reversedMessages = data.messages.slice().reverse();
+        setChatContent(reversedMessages);
+      } else {
+        setChatContent([{ sender: 'info', content: 'No hay contenido disponible.' }]);
+      }
+
+      // Asignamos el nombre del asistente según lo recibido desde la API
+      setAssistantName(data.assistant?.name || 'Asistente');
+      // Se prioriza studentName; si no, se utiliza el nombre del usuario recibido en data.user
+      setPdfUserName(studentName || data.user?.name || 'Usuario');
     } catch (error) {
       console.error('Error al obtener los mensajes del chat:', error);
-      setChatContent([{ role: 'error', content: 'Error al cargar el contenido del chat.' }]);
+      setChatContent([{ sender: 'error', content: 'Error al cargar el contenido del chat.' }]);
+    }
+  };
+
+  // Función para descargar el PDF usando pdfmake
+  const handleDownload = async (chat) => {
+    try {
+      const data = await fetchChatMessages(chat.id_thread);
+      let messages = [];
+      if (data.messages && data.messages.length > 0) {
+        messages = data.messages.slice().reverse();
+      } else {
+        messages = [{ sender: 'info', content: 'No hay contenido disponible.' }];
+      }
+
+      // Extraemos los nombres desde la respuesta del API
+      const currentAssistantName = data.assistant?.name || 'Asistente';
+      const currentPdfUserName = studentName || data.user?.name || 'Usuario';
+
+      // Convertir la fecha a un formato legible (dd-mm-yyyy)
+      const dateObj = new Date(chat.fecha_creacion);
+      const dateStr = dateObj.toLocaleDateString().replace(/\//g, '-');
+
+      // Nombre del archivo
+      const fileName = `chat_${currentPdfUserName}_${currentAssistantName}_${dateStr}.pdf`;
+
+      // Definición del documento para pdfmake
+      const docDefinition = {
+        pageSize: 'LETTER',
+        pageMargins: [40, 60, 40, 60],
+        content: [
+          { text: `Usuario: ${currentPdfUserName}`, style: 'header', margin: [0, 0, 0, 10] },
+          { text: `Chat con ${currentAssistantName}`, style: 'subheader', margin: [0, 0, 0, 20] },
+          ...messages.map((msg) => ({
+            text: `${msg.sender}: ${msg.content}`,
+            margin: [0, 5, 0, 5],
+            fontSize: 12,
+          })),
+        ],
+        styles: {
+          header: {
+            fontSize: 15,
+            bold: true,
+          },
+          subheader: {
+            fontSize: 13,
+            bold: true,
+          },
+        },
+        defaultStyle: {
+          font: 'Roboto', // Fuente por defecto (no soporta todos los emojis)
+        },
+      };
+
+      // Generar y descargar el PDF
+      pdfMake.createPdf(docDefinition).download(fileName);
+    } catch (error) {
+      console.error('Error al descargar PDF:', error);
     }
   };
 
@@ -110,7 +134,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
                           className="icon"
                           onClick={() => {
                             setSelectedChat(chat.id_thread);
-                            fetchChatContent(chat.id_thread, chat.id_asistente);
+                            fetchChatContent(chat.id_thread);
                           }}
                         />
                       </td>
@@ -121,7 +145,9 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="no-data">No hay historial disponible</td>
+                    <td colSpan="3" className="no-data">
+                      No hay historial disponible
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -140,9 +166,11 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
                 {chatContent.map((msg, index) => (
                   <div
                     key={index}
-                    className={`chat-bubble ${msg.role === 'user' ? 'user' : 'assistant'}`}
+                    className={`chat-bubble ${
+                      msg.sender === (studentName || pdfUserName) ? 'user' : 'assistant'
+                    }`}
                   >
-                    <strong>{msg.role === 'user' ? 'Usuario' : assistantName}:</strong> {msg.content}
+                    <strong>{msg.sender}:</strong> {msg.content}
                   </div>
                 ))}
               </div>
