@@ -14,7 +14,7 @@ const PatientCard = ({ id, name, age, location, image, onStartConversation, onCo
           <FaFileAlt className="button-icon" /> Retomar conversación
         </button>
         <button className="action-button" onClick={() => onStartConversation(id)}>
-          <FaComments className="button-icon" /> Iniciar conversación
+          <FaComments className="button-icon" /> Iniciar nueva conversación
         </button>
         <button className="action-button" onClick={onViewImage}>
           <FaPhotoVideo className="button-icon" /> Ver foto del paciente

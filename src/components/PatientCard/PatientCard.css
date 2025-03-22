@@ -15,12 +15,13 @@
   }
   
   .patient-image {
-    width: 100px;
-    height: 100px;
+    width: 100%;
+    max-width: 120px; /* Máximo de 200px, por ejemplo */
+    aspect-ratio: 1/1; /* Mantiene la proporción 1:1 */
+    object-fit: cover;
     border-radius: 50%;
     margin-bottom: 10px;
   }
-  
   .patient-actions {
     display: flex;
     flex-direction: column;

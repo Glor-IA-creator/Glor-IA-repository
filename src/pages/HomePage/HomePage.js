@@ -105,7 +105,7 @@ const continueLastSession = () => {
         <div className="content">
           <h1 className="welcome-message">Bienvenido/a <span className="user-name">{userName}</span></h1>
           <p className="description">
-            Explicación del programa ejemplo "Hola aquí, tendrás la oportunidad de interactuar con una inteligencia artificial avanzada diseñada para simular sesiones de terapia y explorar diversas facetas de la psicología".
+          "¡Hola!, en GlorIA, plataforma creada por la Universidad Gabriela Mistral, tendrás la oportunidad de interactuar con una inteligencia artificial avanzada, diseñada para simular sesiones de terapia y explorar diversas facetas de la psicología".
           </p>
           <h2 className="action-prompt">¿Qué quieres hacer hoy?</h2>
           <div className="cards-container">

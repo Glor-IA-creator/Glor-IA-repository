@@ -36,15 +36,15 @@ const Sidebar = ({ isOpen: initialIsOpen, toggleSidebar }) => {
         </a>
         <a href="/alumno/chat">
           <FaComments className="icon" />
-          {isOpen && <span>Conversación</span>}
+          {isOpen && <span>Mi última sesión</span>}
         </a>
         <a href="/paciente">
           <FaUser className="icon" />
-          {isOpen && <span>Paciente IA</span>}
+          {isOpen && <span>Pacientes IA</span>}
         </a>
         <a href="/alumno/historial">
           <FaHistory className="icon" />
-          {isOpen && <span>Historial</span>}
+          {isOpen && <span>Mi historial</span>}
         </a>
        {/*  <a href="/alumno/evaluacion">
           <FaClipboardCheck className="icon" />
