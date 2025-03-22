@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Chat.css';
 import { FiSend } from 'react-icons/fi';
 import ChatPatientDetails from './ChatPatientDetails';
+import TextareaAutosize from 'react-textarea-autosize';
+
 
 const Chat = () => {
   const location = useLocation();
@@ -255,18 +257,18 @@ const Chat = () => {
       </div>
 
       <div className="chat-footer">
-        <input
-          type="text"
-          value={userMessage}
-          onChange={(e) => setUserMessage(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder="Escribe aquí..."
-          disabled={isResponding}
-        />
-        <button type="button" onClick={handleSubmit} disabled={isResponding}>
-          <FiSend />
-        </button>
-      </div>
+      <TextareaAutosize
+        value={userMessage}
+        onChange={(e) => setUserMessage(e.target.value)}
+        onKeyDown={handleKeyPress}
+        placeholder="Escribe aquí..."
+        disabled={isResponding}
+        minRows={1} // Filas mínimas
+      />
+      <button type="button" onClick={handleSubmit} disabled={isResponding}>
+        <FiSend />
+      </button>
+    </div>
 
       <div
         className={`chat-patient-details ${showPatientDetails ? 'visible' : ''}`}
