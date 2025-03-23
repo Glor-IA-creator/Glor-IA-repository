@@ -1,8 +1,14 @@
-// src/components/Sidebar/Sidebar.js
 import React, { useState, useEffect } from 'react';
-import { FaHome, FaComments, FaUser, FaHistory, FaClipboardCheck } from 'react-icons/fa';
+import {
+  FaHome,
+  FaComments,
+  FaUser,
+  FaHistory,
+  // FaClipboardCheck
+} from 'react-icons/fa';
 import './Sidebar.css';
 import Logo from '../../assets/Logo.svg';
+import Side from '../../assets/Side.svg';
 
 const Sidebar = ({ isOpen: initialIsOpen, toggleSidebar }) => {
   const [isOpen, setIsOpen] = useState(() => {
@@ -18,38 +24,66 @@ const Sidebar = ({ isOpen: initialIsOpen, toggleSidebar }) => {
 
   const handleToggle = () => {
     setIsOpen((prev) => !prev);
-    toggleSidebar && toggleSidebar(!isOpen); // Llamar al callback si se proporciona
+    if (toggleSidebar) {
+      toggleSidebar(!isOpen);
+    }
   };
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
       <button onClick={handleToggle} className="toggle-button">
-        {isOpen ? '←' : '→'}
+        {isOpen ? '<' : '>'}
       </button>
-      <div className="logo-container">
-        <img src={Logo} alt="Logo" className={`logo ${isOpen ? 'show' : 'hide'}`} />
+
+      {/* Logo superior */}
+      <div className="top-logo-container">
+        <img
+          src={Side}
+          alt="Side"
+          className={`top-logo ${isOpen ? 'show' : 'hide'}`}
+        />
       </div>
+
+      {/* Menú */}
       <div className="menu">
-        <a href="/alumno/home">
+        <a href="/alumno/home" className="menu-item">
           <FaHome className="icon" />
           {isOpen && <span>Inicio</span>}
         </a>
-        <a href="/alumno/chat">
+        <a href="/alumno/chat" className="menu-item">
           <FaComments className="icon" />
-          {isOpen && <span>Conversación</span>}
+          {isOpen && <span>Mi última sesión</span>}
         </a>
-        <a href="/paciente">
+        <a href="/paciente" className="menu-item">
           <FaUser className="icon" />
-          {isOpen && <span>Paciente IA</span>}
+          {isOpen && <span>Pacientes IA</span>}
         </a>
-        <a href="/alumno/historial">
+        <a href="/alumno/historial" className="menu-item">
           <FaHistory className="icon" />
-          {isOpen && <span>Historial</span>}
+          {isOpen && <span>Mi historial</span>}
         </a>
-       {/*  <a href="/alumno/evaluacion">
+        {/*
+        <a href="/alumno/evaluacion" className="menu-item">
           <FaClipboardCheck className="icon" />
           {isOpen && <span>Evaluación</span>}
-        </a> */}
+        </a>
+        */}
+      </div>
+
+
+      
+      {/* Logo inferior */}
+      <div className="bottom-section">
+        <p className="project-text">Proyecto impulsado :</p>
+        <div className="thin-line"></div>
+        <div className="bottom-logo-container">
+          <img
+            src={Logo}
+            alt="Logofoter"
+            className={`go ${isOpen ? 'show' : 'hide'}`}
+            style={{ width: '70%', paddingBottom: '10%' }} 
+          />
+        </div>
       </div>
     </div>
   );

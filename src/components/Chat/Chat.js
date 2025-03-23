@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Chat.css';
 import { FiSend } from 'react-icons/fi';
 import ChatPatientDetails from './ChatPatientDetails';
+import TextareaAutosize from 'react-textarea-autosize';
+
 
 const Chat = () => {
   const location = useLocation();
@@ -20,7 +22,6 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const patientDetailsRef = useRef(null);
 
-  // Fetch messages for the given thread (ya existente)
   const fetchMessages = useCallback(async (threadId) => {
     try {
       const token = localStorage.getItem('token');
@@ -33,28 +34,40 @@ const Chat = () => {
           },
         }
       );
-
+  
       if (!response.ok) {
         throw new Error('Error al cargar los mensajes del hilo.');
       }
-
+  
       const data = await response.json();
-      setMessages(
-        data.messages
-          .map((msg) => ({
-            sender: msg.role === 'user' ? 'Tú' : assistant?.name || 'Asistente',
-            text: msg.content,
-            type: msg.role === 'user' ? 'user' : 'assistant',
-          }))
-          .reverse()
-      );
+  
+      // Primero invertimos el orden para que el primer elemento del array
+      // sea realmente el primer mensaje de la conversación.
+      let messagesArray = data.messages.reverse();
+  
+      // Luego, asignamos "verde" a los índices pares (0, 2, 4...) y "azul" a los impares (1, 3, 5...).
+      messagesArray = messagesArray.map((msg, index) => {
+        // index 0 => verde, index 1 => azul, index 2 => verde, etc.
+        const isEven = index % 2 === 0;
+        return {
+          // Puedes modificar 'sender' si deseas un nombre distinto
+          sender: isEven ? 'Tú' : 'PACIENTE',
+          text: msg.content,
+          // type será 'user' para verde y 'assistant' para azul
+          // (asumiendo que tu componente CSS mapea 'user' a verde y 'assistant' a azul).
+          type: isEven ? 'user' : 'assistant',
+        };
+      });
+  
+      setMessages(messagesArray);
     } catch (error) {
       console.error('Error al obtener los mensajes del hilo:', error.message);
       alert('No se pudieron cargar los mensajes del hilo.');
     } finally {
       setLoading(false);
     }
-  }, [assistant]);
+  }, []);
+  
 
   /* ────────────────────────────────────────────── */
   /* AGREGADOS PARA CARGAR EL ÚLTIMO HILO DEL ASISTENTE */
@@ -236,12 +249,12 @@ const Chat = () => {
             />
             <span>{assistant.name || 'Desconocido'}</span>
           </div>
-          <button
+{/*           <button
             className="view-profile-button"
             onClick={() => setShowPatientDetails(!showPatientDetails)}
           >
             Ficha Paciente
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -255,18 +268,18 @@ const Chat = () => {
       </div>
 
       <div className="chat-footer">
-        <input
-          type="text"
-          value={userMessage}
-          onChange={(e) => setUserMessage(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder="Escribe aquí..."
-          disabled={isResponding}
-        />
-        <button type="button" onClick={handleSubmit} disabled={isResponding}>
-          <FiSend />
-        </button>
-      </div>
+      <TextareaAutosize
+        value={userMessage}
+        onChange={(e) => setUserMessage(e.target.value)}
+        onKeyDown={handleKeyPress}
+        placeholder="Escribe aquí..."
+        disabled={isResponding}
+        minRows={1} // Filas mínimas
+      />
+      <button type="button" onClick={handleSubmit} disabled={isResponding}>
+        <FiSend />
+      </button>
+    </div>
 
       <div
         className={`chat-patient-details ${showPatientDetails ? 'visible' : ''}`}

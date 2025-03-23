@@ -67,9 +67,13 @@
   justify-content: center;
   z-index: 1000;
 }
-
+.modal-image {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 10px;
+}
 .modal-content {
-  position: relative;
+  position: relative; /* Asegura el contexto para el botón */
   background: rgba(255, 255, 255, 0);
   padding: 20px;
   border-radius: 10px;
@@ -81,16 +85,10 @@
   align-items: center;
 }
 
-.modal-image {
-  max-width: 100%;
-  max-height: 80vh;
-  border-radius: 10px;
-}
-
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: absolute; /* Posición absoluta respecto a .modal-content */
+  top: 10px;          /* Ajusta la distancia desde arriba */
+  right: 35%;        /* Ajusta la distancia desde la derecha */
   background: red;
   color: white;
   border: none;
@@ -98,4 +96,88 @@
   padding: 5px 10px;
   cursor: pointer;
   border-radius: 50%;
+}
+
+/* === Modal Overlay (fondo semitransparente) === */
+.modal-overlay-confirmation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Asegúrate de que esté por encima de todo */
+}
+
+/* === Contenedor principal del modal (caja blanca) === */
+.modal-content-confirmation {
+  position: relative;
+  background-color: #fff;
+  width: 400px;         /* Ajusta el ancho según tu preferencia */
+  max-width: 90%;       /* Para pantallas pequeñas */
+  border-radius: 10px;  /* Esquinas redondeadas */
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra suave */
+  text-align: center;   /* Centra texto y botones */
+}
+
+/* === Título del modal === */
+.modal-content-confirmation h3 {
+  margin: 0;
+  margin-bottom: 0.8rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #333; 
+}
+
+/* === Texto descriptivo === */
+.modal-content-confirmation p {
+  margin: 0 auto 1.5rem auto;
+  font-size: 1rem;
+  color: #333;
+  max-width: 80%;
+  line-height: 1.4;
+}
+
+/* === Contenedor de los botones === */
+.buttons-container-confirmation {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* === Botones (Sí / No) === */
+.buttons-container-confirmation button {
+  min-width: 60px;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Botón "Sí" (color principal) */
+.buttons-container-confirmation button:first-child {
+  background-color: #4D5BC5; /* Ajusta el color a tu gusto (azul) */
+  color: #fff;
+}
+
+/* Botón "No" (color gris) */
+.buttons-container-confirmation button:last-child {
+  background-color: #667085;
+  color: #FFFFFF;
+}
+
+/* === Opcional: animación de entrada del modal === */
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.modal-content {
+  animation: modalFadeIn 0.3s ease forwards;
 }
