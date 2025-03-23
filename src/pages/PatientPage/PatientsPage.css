@@ -88,7 +88,7 @@
 .close-button {
   position: absolute; /* Posición absoluta respecto a .modal-content */
   top: 10px;          /* Ajusta la distancia desde arriba */
-  right: 600px;        /* Ajusta la distancia desde la derecha */
+  right: 35%;        /* Ajusta la distancia desde la derecha */
   background: red;
   color: white;
   border: none;

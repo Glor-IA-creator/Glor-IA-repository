@@ -22,9 +22,9 @@
   }
   
   .modal-close-button {
-    position: absolute; /* Posición absoluta respecto a .modal-content */
-    top: 10px;          /* Ajusta la distancia desde arriba */
-    right: 650px;        /* Ajusta la distancia desde la derecha */
+    position: absolute; 
+    top: 10px;          
+    right: 37%;        
     border: none;
     font-size: 16px;
     padding: 5px 10px;
