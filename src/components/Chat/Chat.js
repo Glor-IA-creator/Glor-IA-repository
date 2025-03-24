@@ -178,11 +178,19 @@ const Chat = () => {
         }),
       });
 
+      if (response.status === 401) {
+        alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+        localStorage.removeItem('token'); 
+        navigate('/'); 
+        return;
+      }
+      
       const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(data.message || 'Error al procesar la solicitud');
       }
+      
 
       setMessages((prev) =>
         prev.map((msg) =>
