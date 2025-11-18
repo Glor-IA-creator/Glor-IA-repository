@@ -2,7 +2,7 @@ import React from 'react';
 import { FaFileAlt, FaComments, FaPhotoVideo } from 'react-icons/fa';
 import './PatientCard.css';
 
-const PatientCard = ({ id, name, age, location, image, onStartConversation, onContinueConversation, onViewImage }) => {
+const PatientCard = ({ id, name, age, image, onStartConversation, onContinueConversation, onViewImage }) => {
   return (
     <div className="patient-card">
       <img src={image} alt={name} className="patient-image" />
