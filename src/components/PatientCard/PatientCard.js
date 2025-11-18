@@ -8,7 +8,6 @@ const PatientCard = ({ id, name, age, location, image, onStartConversation, onCo
       <img src={image} alt={name} className="patient-image" />
       <h3>{name}</h3>
       <p>Edad: {age} años</p>
-      <p>{location}</p>
       <div className="patient-actions">
         <button className="action-button" onClick={onContinueConversation}>
           <FaFileAlt className="button-icon" /> Retomar conversación
