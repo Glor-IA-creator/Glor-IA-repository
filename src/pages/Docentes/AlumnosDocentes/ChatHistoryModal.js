@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaFileDownload, FaEye, FaTimes } from 'react-icons/fa';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { vfs } from 'pdfmake/build/vfs_fonts'; // VFS con fuente Roboto por defecto
@@ -13,6 +13,23 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   const [assistantName, setAssistantName] = useState('');
   // Se prioriza studentName; en su defecto se obtiene el nombre desde la API en data.user.name
   const [pdfUserName, setPdfUserName] = useState('Usuario');
+
+  // Close modal on ESC key
+  const handleClose = useCallback(() => {
+    if (selectedChat) {
+      setSelectedChat(null);
+    } else {
+      onClose();
+    }
+  }, [selectedChat, onClose]);
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [handleClose]);
 
   // Función genérica para obtener los mensajes y la info asociada del API
   const fetchChatMessages = async (threadId) => {
@@ -110,7 +127,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-container">
         <FaTimes className="close-icon" onClick={onClose} />
         <div className="modal-content">
@@ -157,7 +174,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
       </div>
 
       {selectedChat && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedChat(null); }}>
           <div className="modal-container chat-modal">
             <FaTimes className="close-icon" onClick={() => setSelectedChat(null)} />
             <div className="modal-content chat-view">
