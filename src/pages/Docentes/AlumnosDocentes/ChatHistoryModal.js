@@ -228,6 +228,11 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
                     }`}
                   >
                     <strong>{msg.sender}:</strong> {msg.content}
+                    {msg.created_at && (
+                      <span className="msg-time">
+                        {new Date(msg.created_at * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ })}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
