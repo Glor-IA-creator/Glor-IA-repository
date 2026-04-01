@@ -28,6 +28,8 @@
     flex: 1;
     overflow-y: auto;
     padding: 30px;
+    display: flex;
+    flex-direction: column;
   }
   
   .close-icon {
@@ -49,7 +51,7 @@
   
   .table-container {
     margin-top: 10px;
-    max-height: 400px; /* Ajusta según tu preferencia */
+    flex: 1;
     overflow-y: auto;
     border: 1px solid #ccc;
     border-radius: 4px;
