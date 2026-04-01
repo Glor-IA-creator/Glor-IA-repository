@@ -7,12 +7,43 @@ import './ChatHistoryModal.css';
 // Asignamos las fuentes virtuales (Roboto) que vienen por defecto
 pdfMake.vfs = vfs;
 
+const TZ = 'America/Santiago';
+
+const getChileDateKey = (iso) =>
+  new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: TZ }).format(new Date(iso));
+
+const formatDateLabel = (dateKey) => {
+  const todayKey = getChileDateKey(new Date().toISOString());
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yesterdayKey = getChileDateKey(yd.toISOString());
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const date = new Date(y, m - 1, d, 12);
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const label = `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]}`;
+  if (dateKey === todayKey) return `Hoy — ${label}`;
+  if (dateKey === yesterdayKey) return `Ayer — ${label}`;
+  return label;
+};
+
+const groupChatsByDate = (chats) => {
+  const map = new Map();
+  chats.forEach(chat => {
+    const key = getChileDateKey(chat.fecha_creacion);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(chat);
+  });
+  return Array.from(map.entries());
+};
+
 const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatContent, setChatContent] = useState([]);
   const [assistantName, setAssistantName] = useState('');
   // Se prioriza studentName; en su defecto se obtiene el nombre desde la API en data.user.name
   const [pdfUserName, setPdfUserName] = useState('Usuario');
+
+  const dateGroups = groupChatsByDate(chats);
 
   // Close modal on ESC key
   const handleClose = useCallback(() => {
@@ -86,7 +117,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
 
       // Convertir la fecha a un formato legible (dd-mm-yyyy)
       const dateObj = new Date(chat.fecha_creacion);
-      const dateStr = dateObj.toLocaleDateString().replace(/\//g, '-');
+      const dateStr = dateObj.toLocaleDateString('es-CL', { timeZone: 'America/Santiago' }).replace(/\//g, '-');
 
       // Nombre del archivo
       const fileName = `chat_${currentPdfUserName}_${currentAssistantName}_${dateStr}.pdf`;
@@ -136,29 +167,38 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
             <table className="history-table">
               <thead className="sticky-header">
                 <tr>
-                  <th>Fecha</th>
+                  <th>Hora</th>
                   <th>Ver</th>
                   <th>Descargar</th>
                 </tr>
               </thead>
               <tbody>
-                {chats.length > 0 ? (
-                  chats.map((chat) => (
-                    <tr key={chat.id_thread}>
-                      <td>{new Date(chat.fecha_creacion).toLocaleDateString()}</td>
-                      <td>
-                        <FaEye
-                          className="icon"
-                          onClick={() => {
-                            setSelectedChat(chat.id_thread);
-                            fetchChatContent(chat.id_thread);
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <FaFileDownload className="icon" onClick={() => handleDownload(chat)} />
-                      </td>
-                    </tr>
+                {dateGroups.length > 0 ? (
+                  dateGroups.map(([dateKey, dateSessions]) => (
+                    <React.Fragment key={dateKey}>
+                      <tr className="date-separator">
+                        <td colSpan="3" style={{ padding: '10px 8px 4px', fontWeight: 600, fontSize: '13px', color: '#555', borderBottom: '1px solid #e5e5e5' }}>
+                          {formatDateLabel(dateKey)}
+                        </td>
+                      </tr>
+                      {dateSessions.map((chat) => (
+                        <tr key={chat.id_thread}>
+                          <td>{new Date(chat.fecha_creacion).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ })}</td>
+                          <td>
+                            <FaEye
+                              className="icon"
+                              onClick={() => {
+                                setSelectedChat(chat.id_thread);
+                                fetchChatContent(chat.id_thread);
+                              }}
+                            />
+                          </td>
+                          <td>
+                            <FaFileDownload className="icon" onClick={() => handleDownload(chat)} />
+                          </td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
                   ))
                 ) : (
                   <tr>
