@@ -26,10 +26,14 @@ const formatDateLabel = (dateKey) => {
   return label;
 };
 
-const groupChatsByDate = (chats) => {
+const groupChatsByDate = (chats, statsMap = {}) => {
   const map = new Map();
   chats.forEach(chat => {
-    const key = getChileDateKey(chat.fecha_creacion);
+    const stats = statsMap[chat.id_thread];
+    const dateSource = stats?.firstTime
+      ? new Date(stats.firstTime * 1000).toISOString()
+      : chat.fecha_creacion;
+    const key = getChileDateKey(dateSource);
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(chat);
   });
@@ -63,9 +67,11 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
           const data = await fetchChatMessagesApi(chat.id_thread);
           const msgs = data.messages || [];
           if (msgs.length > 0) {
+            const times = msgs.map(m => m.created_at);
             stats[chat.id_thread] = {
               msgCount: msgs.length,
-              lastTime: msgs[0].created_at, // desc order, first = newest
+              firstTime: Math.min(...times),
+              lastTime: Math.max(...times),
             };
           }
         } catch (e) { /* skip */ }
@@ -79,7 +85,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
 
   // Filter out empty chats and group by date
   const nonEmptyChats = chats.filter(c => chatStats[c.id_thread]);
-  const dateGroups = groupChatsByDate(nonEmptyChats);
+  const dateGroups = groupChatsByDate(nonEmptyChats, chatStats);
 
   // Close modal on ESC key
   const handleClose = useCallback(() => {
@@ -211,7 +217,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
                         const stats = chatStats[chat.id_thread];
                         return (
                           <tr key={chat.id_thread}>
-                            <td>{new Date(chat.fecha_creacion).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ })}</td>
+                            <td>{stats?.firstTime ? new Date(stats.firstTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
                             <td>{stats?.lastTime ? new Date(stats.lastTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
                             <td>{stats?.msgCount || 0}</td>
                             <td>
