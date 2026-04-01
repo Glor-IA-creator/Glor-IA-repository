@@ -36,14 +36,50 @@ const groupChatsByDate = (chats) => {
   return Array.from(map.entries());
 };
 
+const fetchChatMessagesApi = async (threadId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(
+    `${process.env.REACT_APP_API_URL}/api/chat/obtener-mensajes?threadId=${threadId}`,
+    { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } }
+  );
+  return response.json();
+};
+
 const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [chatContent, setChatContent] = useState([]);
   const [assistantName, setAssistantName] = useState('');
-  // Se prioriza studentName; en su defecto se obtiene el nombre desde la API en data.user.name
   const [pdfUserName, setPdfUserName] = useState('Usuario');
+  const [chatStats, setChatStats] = useState({});
+  const [loadingStats, setLoadingStats] = useState(true);
 
-  const dateGroups = groupChatsByDate(chats);
+  // Fetch stats for all chats on mount
+  useEffect(() => {
+    const fetchAllStats = async () => {
+      setLoadingStats(true);
+      const stats = {};
+      await Promise.all(chats.map(async (chat) => {
+        try {
+          const data = await fetchChatMessagesApi(chat.id_thread);
+          const msgs = data.messages || [];
+          if (msgs.length > 0) {
+            stats[chat.id_thread] = {
+              msgCount: msgs.length,
+              lastTime: msgs[0].created_at, // desc order, first = newest
+            };
+          }
+        } catch (e) { /* skip */ }
+      }));
+      setChatStats(stats);
+      setLoadingStats(false);
+    };
+    if (chats.length > 0) fetchAllStats();
+    else setLoadingStats(false);
+  }, [chats]);
+
+  // Filter out empty chats and group by date
+  const nonEmptyChats = chats.filter(c => chatStats[c.id_thread]);
+  const dateGroups = groupChatsByDate(nonEmptyChats);
 
   // Close modal on ESC key
   const handleClose = useCallback(() => {
@@ -62,26 +98,10 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
     return () => document.removeEventListener('keydown', handleEsc);
   }, [handleClose]);
 
-  // Función genérica para obtener los mensajes y la info asociada del API
-  const fetchChatMessages = async (threadId) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(
-      `${process.env.REACT_APP_API_URL}/api/chat/obtener-mensajes?threadId=${threadId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      }
-    );
-    return response.json();
-  };
-
   // Al previsualizar, obtenemos los mensajes y la info (assistant y user)
   const fetchChatContent = async (threadId) => {
     try {
-      const data = await fetchChatMessages(threadId);
+      const data = await fetchChatMessagesApi(threadId);
       if (data.messages && data.messages.length > 0) {
         // Invertimos para que se muestren en orden natural (primeros primero)
         const reversedMessages = data.messages.slice().reverse();
@@ -103,7 +123,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   // Función para descargar el PDF usando pdfmake
   const handleDownload = async (chat) => {
     try {
-      const data = await fetchChatMessages(chat.id_thread);
+      const data = await fetchChatMessagesApi(chat.id_thread);
       let messages = [];
       if (data.messages && data.messages.length > 0) {
         messages = data.messages.slice().reverse();
@@ -167,42 +187,53 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
             <table className="history-table">
               <thead className="sticky-header">
                 <tr>
-                  <th>Hora</th>
+                  <th>Inicio</th>
+                  <th>Término</th>
+                  <th>Msgs</th>
                   <th>Ver</th>
                   <th>Descargar</th>
                 </tr>
               </thead>
               <tbody>
-                {dateGroups.length > 0 ? (
+                {loadingStats ? (
+                  <tr>
+                    <td colSpan="5" className="no-data">Cargando...</td>
+                  </tr>
+                ) : dateGroups.length > 0 ? (
                   dateGroups.map(([dateKey, dateSessions]) => (
                     <React.Fragment key={dateKey}>
                       <tr className="date-separator">
-                        <td colSpan="3" style={{ padding: '10px 8px 4px', fontWeight: 600, fontSize: '13px', color: '#555', borderBottom: '1px solid #e5e5e5' }}>
+                        <td colSpan="5" style={{ padding: '10px 8px 4px', fontWeight: 600, fontSize: '13px', color: '#555', borderBottom: '1px solid #e5e5e5' }}>
                           {formatDateLabel(dateKey)}
                         </td>
                       </tr>
-                      {dateSessions.map((chat) => (
-                        <tr key={chat.id_thread}>
-                          <td>{new Date(chat.fecha_creacion).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ })}</td>
-                          <td>
-                            <FaEye
-                              className="icon"
-                              onClick={() => {
-                                setSelectedChat(chat.id_thread);
-                                fetchChatContent(chat.id_thread);
-                              }}
-                            />
-                          </td>
-                          <td>
-                            <FaFileDownload className="icon" onClick={() => handleDownload(chat)} />
-                          </td>
-                        </tr>
-                      ))}
+                      {dateSessions.map((chat) => {
+                        const stats = chatStats[chat.id_thread];
+                        return (
+                          <tr key={chat.id_thread}>
+                            <td>{new Date(chat.fecha_creacion).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ })}</td>
+                            <td>{stats?.lastTime ? new Date(stats.lastTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
+                            <td>{stats?.msgCount || 0}</td>
+                            <td>
+                              <FaEye
+                                className="icon"
+                                onClick={() => {
+                                  setSelectedChat(chat.id_thread);
+                                  fetchChatContent(chat.id_thread);
+                                }}
+                              />
+                            </td>
+                            <td>
+                              <FaFileDownload className="icon" onClick={() => handleDownload(chat)} />
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </React.Fragment>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="no-data">
+                    <td colSpan="5" className="no-data">
                       No hay historial disponible
                     </td>
                   </tr>
