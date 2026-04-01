@@ -41,21 +41,16 @@ const Chat = () => {
   
       const data = await response.json();
   
-      // Primero invertimos el orden para que el primer elemento del array
-      // sea realmente el primer mensaje de la conversación.
+      // Invertimos el orden para que el primer elemento sea el primer mensaje
       let messagesArray = data.messages.reverse();
-  
-      // Luego, asignamos "verde" a los índices pares (0, 2, 4...) y "azul" a los impares (1, 3, 5...).
-      messagesArray = messagesArray.map((msg, index) => {
-        // index 0 => verde, index 1 => azul, index 2 => verde, etc.
-        const isEven = index % 2 === 0;
+
+      const userName = data.user?.name || 'Tú';
+      messagesArray = messagesArray.map((msg) => {
+        const isUser = msg.sender === userName || msg.sender === 'Usuario desconocido';
         return {
-          // Puedes modificar 'sender' si deseas un nombre distinto
-          sender: isEven ? 'Tú' : 'PACIENTE',
+          sender: isUser ? 'Tú' : assistant?.name || 'PACIENTE',
           text: msg.content,
-          // type será 'user' para verde y 'assistant' para azul
-          // (asumiendo que tu componente CSS mapea 'user' a verde y 'assistant' a azul).
-          type: isEven ? 'user' : 'assistant',
+          type: isUser ? 'user' : 'assistant',
         };
       });
   
