@@ -34,7 +34,13 @@ const Chat = () => {
           },
         }
       );
-  
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/');
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('Error al cargar los mensajes del hilo.');
       }
@@ -78,6 +84,12 @@ const Chat = () => {
         },
       });
 
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/');
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('Error al cargar el último hilo del asistente.');
       }
@@ -119,6 +131,12 @@ const Chat = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/');
+          return;
+        }
 
         if (!response.ok) {
           throw new Error('Error al cargar el último hilo.');

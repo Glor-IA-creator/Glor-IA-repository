@@ -31,6 +31,13 @@ const ChatPage = () => {
         body: JSON.stringify({ minutos }),
       });
 
+      if (response.status === 401) {
+        clearInterval(intervalRef.current);
+        localStorage.removeItem('token');
+        navigate('/');
+        return;
+      }
+
       const data = await response.json();
       console.log('✅ Respuesta del backend:', data);
     } catch (error) {

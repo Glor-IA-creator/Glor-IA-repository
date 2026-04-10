@@ -74,6 +74,12 @@ const continueLastSession = () => {
         body: JSON.stringify({ patientId: randomAssistant.id }),
       });
 
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/');
+        return;
+      }
+
       const data = await response.json();
 
       if (!response.ok) {

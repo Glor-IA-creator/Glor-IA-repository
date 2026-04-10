@@ -90,7 +90,7 @@ const PatientsPage = () => {
       console.log("Enviando solicitud al backend con patientId:", patientToConfirm.id);
 
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/chat/crear-hilo`, 
+        `${process.env.REACT_APP_API_URL}/api/chat/crear-hilo`,
         {
           method: 'POST',
           headers: {
@@ -100,6 +100,12 @@ const PatientsPage = () => {
           body: JSON.stringify({ patientId: patientToConfirm.id }),
         }
       );
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/');
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`Error en el servidor: ${response.statusText}`);
@@ -148,6 +154,11 @@ const PatientsPage = () => {
           },
         }
       );
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/');
+        return;
+      }
       if (!response.ok) {
         throw new Error(`Error en el servidor: ${response.statusText}`);
       }
