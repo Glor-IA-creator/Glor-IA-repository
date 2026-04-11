@@ -76,7 +76,7 @@ const continueLastSession = () => {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/');
+        navigate('/?expired=1');
         return;
       }
 

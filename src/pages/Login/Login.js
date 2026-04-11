@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Login.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import LogoGloria from '../../assets/LogoGLORIA.svg';
 import Logo from '../../assets/Logo.svg';
@@ -10,6 +10,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('expired') === '1';
 
   const API_URL = process.env.REACT_APP_API_URL;
 
@@ -102,6 +104,12 @@ const Login = () => {
           <form className="login-form" onSubmit={handleLogin}>
             <img src={LogoGloria} alt="LogoGloria" className="logo-form" />
             <h2>Iniciar sesión</h2>
+            {sessionExpired && !error && (
+              <p className="session-expired-message">
+                Tu sesión estuvo abierta más de 8 horas y se cerró por seguridad.
+                Vuelve a ingresar para continuar.
+              </p>
+            )}
             {error && <p className="error-message">{error}</p>}
 
             <div className="input-group">
