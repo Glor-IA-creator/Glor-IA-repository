@@ -37,7 +37,7 @@ const Chat = () => {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/');
+        navigate('/?expired=1');
         return;
       }
 
@@ -86,7 +86,7 @@ const Chat = () => {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/');
+        navigate('/?expired=1');
         return;
       }
 
@@ -134,7 +134,7 @@ const Chat = () => {
 
         if (response.status === 401) {
           localStorage.removeItem('token');
-          navigate('/');
+          navigate('/?expired=1');
           return;
         }
 
@@ -192,9 +192,8 @@ const Chat = () => {
       });
 
       if (response.status === 401) {
-        alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
-        localStorage.removeItem('token'); 
-        navigate('/'); 
+        localStorage.removeItem('token');
+        navigate('/?expired=1');
         return;
       }
       

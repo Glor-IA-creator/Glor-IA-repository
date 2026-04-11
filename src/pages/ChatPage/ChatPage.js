@@ -34,7 +34,7 @@ const ChatPage = () => {
       if (response.status === 401) {
         clearInterval(intervalRef.current);
         localStorage.removeItem('token');
-        navigate('/');
+        navigate('/?expired=1');
         return;
       }
 
