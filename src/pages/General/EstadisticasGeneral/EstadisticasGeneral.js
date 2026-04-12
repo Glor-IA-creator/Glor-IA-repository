@@ -186,7 +186,7 @@ const EstadisticasGeneral = () => {
             <button className="pagination-button" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
               Anterior
             </button>
-            <span className="pagination-info">P\u00e1gina {currentPage} de {totalPages || 1}</span>
+            <span className="pagination-info">Página {currentPage} de {totalPages || 1}</span>
             <button className="pagination-button" disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>
               Siguiente
             </button>
