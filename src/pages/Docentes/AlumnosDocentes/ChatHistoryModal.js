@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaFileDownload, FaEye, FaTimes } from 'react-icons/fa';
 import pdfMake from 'pdfmake/build/pdfmake';
-import { vfs } from 'pdfmake/build/vfs_fonts'; // VFS con fuente Roboto por defecto
+import { vfs } from 'pdfmake/build/vfs_fonts';
 import './ChatHistoryModal.css';
 
-// Asignamos las fuentes virtuales (Roboto) que vienen por defecto
 pdfMake.vfs = vfs;
 
 const TZ = 'America/Santiago';
+const SESSION_GAP = 30 * 60; // 30 min in seconds
 
 const getChileDateKey = (iso) =>
   new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: TZ }).format(new Date(iso));
@@ -26,18 +26,50 @@ const formatDateLabel = (dateKey) => {
   return label;
 };
 
-const groupChatsByDate = (chats, statsMap = {}) => {
+const splitIntoSessions = (messages, threadId, fechaCreacion) => {
+  if (!messages || messages.length === 0) {
+    return [{ id: `${threadId}__0`, id_thread: threadId, firstTime: null, lastTime: null, msgCount: 0, msgRange: [0, 0], fecha_creacion: fechaCreacion }];
+  }
+
+  const sorted = [...messages].sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+  const sessions = [];
+  let sessionStart = 0;
+
+  for (let i = 1; i <= sorted.length; i++) {
+    const isGap = i < sorted.length && sorted[i].created_at && sorted[i - 1].created_at &&
+      (sorted[i].created_at - sorted[i - 1].created_at) > SESSION_GAP;
+    const isEnd = i === sorted.length;
+
+    if (isGap || isEnd) {
+      const sessionMsgs = sorted.slice(sessionStart, i);
+      const times = sessionMsgs.map(m => m.created_at).filter(Boolean);
+      sessions.push({
+        id: `${threadId}__${sessions.length}`,
+        id_thread: threadId,
+        firstTime: times.length > 0 ? Math.min(...times) : null,
+        lastTime: times.length > 0 ? Math.max(...times) : null,
+        msgCount: sessionMsgs.length,
+        msgRange: [sessionStart, i],
+        fecha_creacion: fechaCreacion,
+      });
+      sessionStart = i;
+    }
+  }
+
+  return sessions;
+};
+
+const groupSessionsByDate = (sessions) => {
   const map = new Map();
-  chats.forEach(chat => {
-    const stats = statsMap[chat.id_thread];
-    const dateSource = stats?.firstTime
-      ? new Date(stats.firstTime * 1000).toISOString()
-      : chat.fecha_creacion;
+  sessions.forEach(s => {
+    const dateSource = s.firstTime
+      ? new Date(s.firstTime * 1000).toISOString()
+      : s.fecha_creacion;
     const key = getChileDateKey(dateSource);
     if (!map.has(key)) map.set(key, []);
-    map.get(key).push(chat);
+    map.get(key).push(s);
   });
-  return Array.from(map.entries());
+  return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
 };
 
 const fetchChatMessagesApi = async (threadId) => {
@@ -61,51 +93,59 @@ const fetchChatMessagesApi = async (threadId) => {
 };
 
 const ChatHistoryModal = ({ chats, onClose, studentName }) => {
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [chatContent, setChatContent] = useState([]);
   const [assistantName, setAssistantName] = useState('');
   const [pdfUserName, setPdfUserName] = useState('Usuario');
-  const [chatStats, setChatStats] = useState({});
+  const [sessions, setSessions] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
+  const msgCache = useRef({});
 
   useEffect(() => {
     const fetchAllStats = async () => {
       setLoadingStats(true);
-      const stats = {};
+      const allSessions = [];
+
       for (let i = 0; i < chats.length; i += 5) {
         const batch = chats.slice(i, i + 5);
         await Promise.all(batch.map(async (chat) => {
           try {
             const data = await fetchChatMessagesApi(chat.id_thread);
             const msgs = data.messages || [];
-            if (msgs.length > 0) {
-              const times = msgs.map(m => m.created_at);
-              stats[chat.id_thread] = {
-                msgCount: msgs.length,
-                firstTime: Math.min(...times),
-                lastTime: Math.max(...times),
-              };
-            }
-          } catch (e) { /* skip — thread still shows via fecha_creacion */ }
+            const sorted = [...msgs].sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+            msgCache.current[chat.id_thread] = { messages: sorted, assistant: data.assistant, user: data.user };
+            const threadSessions = splitIntoSessions(sorted, chat.id_thread, chat.fecha_creacion);
+            allSessions.push(...threadSessions);
+          } catch (e) {
+            allSessions.push({
+              id: `${chat.id_thread}__0`,
+              id_thread: chat.id_thread,
+              firstTime: null,
+              lastTime: null,
+              msgCount: 0,
+              msgRange: [0, 0],
+              fecha_creacion: chat.fecha_creacion,
+            });
+          }
         }));
       }
-      setChatStats(stats);
+
+      setSessions(allSessions);
       setLoadingStats(false);
     };
     if (chats.length > 0) fetchAllStats();
     else setLoadingStats(false);
   }, [chats]);
 
-  const dateGroups = groupChatsByDate(chats, chatStats);
+  const dateGroups = groupSessionsByDate(sessions);
 
-  // Close modal on ESC key
   const handleClose = useCallback(() => {
-    if (selectedChat) {
-      setSelectedChat(null);
+    if (selectedSession) {
+      setSelectedSession(null);
     } else {
       onClose();
     }
-  }, [selectedChat, onClose]);
+  }, [selectedSession, onClose]);
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -115,25 +155,27 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
     return () => document.removeEventListener('keydown', handleEsc);
   }, [handleClose]);
 
-  // Al previsualizar, obtenemos los mensajes y la info (assistant y user)
-  const fetchChatContent = async (threadId) => {
-    try {
-      const data = await fetchChatMessagesApi(threadId);
-      if (data.messages && data.messages.length > 0) {
-        // Invertimos para que se muestren en orden natural (primeros primero)
-        const reversedMessages = data.messages.slice().reverse();
-        setChatContent(reversedMessages);
-      } else {
-        setChatContent([{ sender: 'info', content: 'No hay contenido disponible.' }]);
-      }
+  const viewSession = async (session) => {
+    setSelectedSession(session);
+    const cached = msgCache.current[session.id_thread];
+    if (cached && cached.messages.length > 0) {
+      const slice = cached.messages.slice(session.msgRange[0], session.msgRange[1]);
+      setChatContent(slice.length > 0 ? slice : [{ sender: 'info', content: 'No hay contenido disponible.' }]);
+      setAssistantName(cached.assistant?.name || 'Asistente');
+      setPdfUserName(studentName || cached.user?.name || 'Usuario');
+      return;
+    }
 
-      // Asignamos el nombre del asistente según lo recibido desde la API
+    try {
+      const data = await fetchChatMessagesApi(session.id_thread);
+      const sorted = [...(data.messages || [])].sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+      msgCache.current[session.id_thread] = { messages: sorted, assistant: data.assistant, user: data.user };
+      const slice = sorted.slice(session.msgRange[0], session.msgRange[1]);
+      setChatContent(slice.length > 0 ? slice : [{ sender: 'info', content: 'No hay contenido disponible.' }]);
       setAssistantName(data.assistant?.name || 'Asistente');
-      // Se prioriza studentName; si no, se utiliza el nombre del usuario recibido en data.user
       setPdfUserName(studentName || data.user?.name || 'Usuario');
     } catch (error) {
       if (error.message === 'auth') return;
-      console.error('Error al obtener los mensajes del chat:', error);
       const msg = error.message === 'thread_unavailable'
         ? 'No se pudo cargar este historial. El hilo de conversación ya no está disponible.'
         : 'Error al cargar el contenido del chat.';
@@ -141,29 +183,29 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
     }
   };
 
-  // Función para descargar el PDF usando pdfmake
-  const handleDownload = async (chat) => {
+  const handleDownload = async (session) => {
     try {
-      const data = await fetchChatMessagesApi(chat.id_thread);
-      let messages = [];
-      if (data.messages && data.messages.length > 0) {
-        messages = data.messages.slice().reverse();
+      let messages;
+      const cached = msgCache.current[session.id_thread];
+      if (cached && cached.messages.length > 0) {
+        messages = cached.messages.slice(session.msgRange[0], session.msgRange[1]);
       } else {
+        const data = await fetchChatMessagesApi(session.id_thread);
+        const sorted = [...(data.messages || [])].sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+        messages = sorted.slice(session.msgRange[0], session.msgRange[1]);
+      }
+
+      if (!messages || messages.length === 0) {
         messages = [{ sender: 'info', content: 'No hay contenido disponible.' }];
       }
 
-      // Extraemos los nombres desde la respuesta del API
-      const currentAssistantName = data.assistant?.name || 'Asistente';
-      const currentPdfUserName = studentName || data.user?.name || 'Usuario';
+      const currentAssistantName = cached?.assistant?.name || assistantName || 'Asistente';
+      const currentPdfUserName = studentName || cached?.user?.name || pdfUserName || 'Usuario';
 
-      // Convertir la fecha a un formato legible (dd-mm-yyyy)
-      const dateObj = new Date(chat.fecha_creacion);
-      const dateStr = dateObj.toLocaleDateString('es-CL', { timeZone: 'America/Santiago' }).replace(/\//g, '-');
-
-      // Nombre del archivo
+      const dateObj = session.firstTime ? new Date(session.firstTime * 1000) : new Date(session.fecha_creacion);
+      const dateStr = dateObj.toLocaleDateString('es-CL', { timeZone: TZ }).replace(/\//g, '-');
       const fileName = `chat_${currentPdfUserName}_${currentAssistantName}_${dateStr}.pdf`;
 
-      // Definición del documento para pdfmake
       const docDefinition = {
         pageSize: 'LETTER',
         pageMargins: [40, 60, 40, 60],
@@ -177,21 +219,12 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
           })),
         ],
         styles: {
-          header: {
-            fontSize: 15,
-            bold: true,
-          },
-          subheader: {
-            fontSize: 13,
-            bold: true,
-          },
+          header: { fontSize: 15, bold: true },
+          subheader: { fontSize: 13, bold: true },
         },
-        defaultStyle: {
-          font: 'Roboto', // Fuente por defecto (no soporta todos los emojis)
-        },
+        defaultStyle: { font: 'Roboto' },
       };
 
-      // Generar y descargar el PDF
       pdfMake.createPdf(docDefinition).download(fileName);
     } catch (error) {
       if (error.message === 'auth') return;
@@ -232,28 +265,19 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
                           {formatDateLabel(dateKey)}
                         </td>
                       </tr>
-                      {dateSessions.map((chat) => {
-                        const stats = chatStats[chat.id_thread];
-                        return (
-                          <tr key={chat.id_thread}>
-                            <td>{stats?.firstTime ? new Date(stats.firstTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
-                            <td>{stats?.lastTime ? new Date(stats.lastTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
-                            <td>{stats?.msgCount || 0}</td>
-                            <td>
-                              <FaEye
-                                className="icon"
-                                onClick={() => {
-                                  setSelectedChat(chat.id_thread);
-                                  fetchChatContent(chat.id_thread);
-                                }}
-                              />
-                            </td>
-                            <td>
-                              <FaFileDownload className="icon" onClick={() => handleDownload(chat)} />
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {dateSessions.map((session) => (
+                        <tr key={session.id}>
+                          <td>{session.firstTime ? new Date(session.firstTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
+                          <td>{session.lastTime ? new Date(session.lastTime * 1000).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', timeZone: TZ }) : '—'}</td>
+                          <td>{session.msgCount}</td>
+                          <td>
+                            <FaEye className="icon" onClick={() => viewSession(session)} />
+                          </td>
+                          <td>
+                            <FaFileDownload className="icon" onClick={() => handleDownload(session)} />
+                          </td>
+                        </tr>
+                      ))}
                     </React.Fragment>
                   ))
                 ) : (
@@ -269,10 +293,10 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
         </div>
       </div>
 
-      {selectedChat && (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedChat(null); }}>
+      {selectedSession && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedSession(null); }}>
           <div className="modal-container chat-modal">
-            <FaTimes className="close-icon" onClick={() => setSelectedChat(null)} />
+            <FaTimes className="close-icon" onClick={() => setSelectedSession(null)} />
             <div className="modal-content chat-view">
               <h3>Historial Sesiones</h3>
               <div className="chat-box">
