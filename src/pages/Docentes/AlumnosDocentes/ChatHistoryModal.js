@@ -69,7 +69,12 @@ const groupSessionsByDate = (sessions) => {
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(s);
   });
-  return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  return Array.from(map.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([key, daySessions]) => [
+      key,
+      daySessions.sort((a, b) => (b.firstTime || 0) - (a.firstTime || 0)),
+    ]);
 };
 
 const fetchChatMessagesApi = async (threadId) => {
