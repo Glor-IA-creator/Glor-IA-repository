@@ -29,7 +29,7 @@ const EstadisticasGeneral = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchChatHistory = (user) => {
     const token = localStorage.getItem('token');
@@ -168,6 +168,31 @@ const EstadisticasGeneral = () => {
           </div>
         </div>
 
+        <div className="pagination" style={{ marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label style={{ fontSize: '13px', color: '#555' }}>Mostrar</label>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px' }}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button className="pagination-button" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
+              Anterior
+            </button>
+            <span className="pagination-info">P\u00e1gina {currentPage} de {totalPages || 1}</span>
+            <button className="pagination-button" disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>
+              Siguiente
+            </button>
+          </div>
+        </div>
+
         <table className="statistics-table">
           <thead>
             <tr>
@@ -215,15 +240,6 @@ const EstadisticasGeneral = () => {
           </tbody>
         </table>
 
-        <div className="pagination">
-          <button className="pagination-button" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
-            Anterior
-          </button>
-          <span className="pagination-info">Página {currentPage} de {totalPages || 1}</span>
-          <button className="pagination-button" disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>
-            Siguiente
-          </button>
-        </div>
       </div>
 
       {showModal && (
