@@ -68,25 +68,27 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
   const [chatStats, setChatStats] = useState({});
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // Fetch stats for all chats on mount
   useEffect(() => {
     const fetchAllStats = async () => {
       setLoadingStats(true);
       const stats = {};
-      await Promise.all(chats.map(async (chat) => {
-        try {
-          const data = await fetchChatMessagesApi(chat.id_thread);
-          const msgs = data.messages || [];
-          if (msgs.length > 0) {
-            const times = msgs.map(m => m.created_at);
-            stats[chat.id_thread] = {
-              msgCount: msgs.length,
-              firstTime: Math.min(...times),
-              lastTime: Math.max(...times),
-            };
-          }
-        } catch (e) { /* skip */ }
-      }));
+      for (let i = 0; i < chats.length; i += 5) {
+        const batch = chats.slice(i, i + 5);
+        await Promise.all(batch.map(async (chat) => {
+          try {
+            const data = await fetchChatMessagesApi(chat.id_thread);
+            const msgs = data.messages || [];
+            if (msgs.length > 0) {
+              const times = msgs.map(m => m.created_at);
+              stats[chat.id_thread] = {
+                msgCount: msgs.length,
+                firstTime: Math.min(...times),
+                lastTime: Math.max(...times),
+              };
+            }
+          } catch (e) { /* skip — thread still shows via fecha_creacion */ }
+        }));
+      }
       setChatStats(stats);
       setLoadingStats(false);
     };
@@ -94,9 +96,7 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
     else setLoadingStats(false);
   }, [chats]);
 
-  // Filter out empty chats and group by date
-  const nonEmptyChats = chats.filter(c => chatStats[c.id_thread]);
-  const dateGroups = groupChatsByDate(nonEmptyChats, chatStats);
+  const dateGroups = groupChatsByDate(chats, chatStats);
 
   // Close modal on ESC key
   const handleClose = useCallback(() => {
@@ -194,7 +194,11 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
       // Generar y descargar el PDF
       pdfMake.createPdf(docDefinition).download(fileName);
     } catch (error) {
+      if (error.message === 'auth') return;
       console.error('Error al descargar PDF:', error);
+      alert(error.message === 'thread_unavailable'
+        ? 'No se pudo descargar: el hilo ya no está disponible.'
+        : 'Error al descargar el PDF.');
     }
   };
 
