@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
 import { handleAuthError } from '../../../utils/auth';
-import { FaDownload } from 'react-icons/fa';
+import { FaDownload, FaCommentDots } from 'react-icons/fa';
+import ChatHistoryModal from '../../Docentes/AlumnosDocentes/ChatHistoryModal';
 import * as XLSX from 'xlsx'; // Librería para exportar a Excel
 import './EstadisticasGeneral.css';
 
@@ -24,8 +25,32 @@ const EstadisticasGeneral = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRole, setSelectedRole] = useState('all'); // Filtro por tipo de usuario
+  const [selectedRole, setSelectedRole] = useState('all');
+  const [chatHistory, setChatHistory] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const itemsPerPage = 10;
+
+  const fetchChatHistory = (user) => {
+    const token = localStorage.getItem('token');
+    fetch(`${API_URL}/api/estudiantes/${user.id_usuario}/chats`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then((res) => {
+        if (handleAuthError(res, navigate)) return Promise.reject('auth');
+        return res.json();
+      })
+      .then((data) => {
+        setChatHistory(Array.isArray(data) ? data : []);
+        setSelectedStudent(user);
+        setShowModal(true);
+      })
+      .catch((error) => { if (error !== 'auth') console.error('Error al obtener chats:', error); });
+  };
 
   useEffect(() => {
     const fetchUsersWithRoles = async () => {
@@ -153,6 +178,7 @@ const EstadisticasGeneral = () => {
               <th>Pacientes</th>
               <th>Ingresos</th>
               <th>IA Consultadas</th>
+              <th>Historial</th>
             </tr>
           </thead>
           <tbody>
@@ -174,11 +200,16 @@ const EstadisticasGeneral = () => {
                       <span>Sin consultas</span>
                     )}
                   </td>
+                  <td>
+                    {user.id_rol === 3 && (
+                      <FaCommentDots className="chat-icon" onClick={() => fetchChatHistory(user)} />
+                    )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="no-data">No hay datos disponibles</td>
+                <td colSpan="8" className="no-data">No hay datos disponibles</td>
               </tr>
             )}
           </tbody>
@@ -194,6 +225,14 @@ const EstadisticasGeneral = () => {
           </button>
         </div>
       </div>
+
+      {showModal && (
+        <ChatHistoryModal
+          chats={chatHistory}
+          onClose={() => setShowModal(false)}
+          studentName={selectedStudent?.nombre}
+        />
+      )}
     </div>
   );
 };
