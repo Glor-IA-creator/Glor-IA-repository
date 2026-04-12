@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { handleAuthError } from '../../utils/auth';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import Chat from '../../components/Chat/Chat';
@@ -31,10 +32,8 @@ const ChatPage = () => {
         body: JSON.stringify({ minutos }),
       });
 
-      if (response.status === 401) {
+      if (handleAuthError(response, navigate)) {
         clearInterval(intervalRef.current);
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
         return;
       }
 

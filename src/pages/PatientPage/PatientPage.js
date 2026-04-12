@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { handleAuthError } from '../../utils/auth';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import PatientCard from '../../components/PatientCard/PatientCard';
@@ -101,11 +102,7 @@ const PatientsPage = () => {
         }
       );
 
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
-        return;
-      }
+      if (handleAuthError(response, navigate)) return;
 
       if (!response.ok) {
         throw new Error(`Error en el servidor: ${response.statusText}`);
@@ -154,11 +151,7 @@ const PatientsPage = () => {
           },
         }
       );
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
-        return;
-      }
+      if (handleAuthError(response, navigate)) return;
       if (!response.ok) {
         throw new Error(`Error en el servidor: ${response.statusText}`);
       }

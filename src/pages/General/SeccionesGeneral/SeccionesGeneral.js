@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
+import { handleAuthError } from '../../../utils/auth';
 import './SeccionesGeneral.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const SeccionesGeneral = () => {
+  const navigate = useNavigate();
   const [secciones, setSecciones] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -25,9 +28,12 @@ const SeccionesGeneral = () => {
         'Authorization': `Bearer ${token}`
       }
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (handleAuthError(res, navigate)) return Promise.reject('auth');
+        return res.json();
+      })
       .then((data) => setSecciones(data))
-      .catch((error) => console.error('Error al obtener secciones:', error));
+      .catch((error) => { if (error !== 'auth') console.error('Error al obtener secciones:', error); });
   }, []);
 
   const cambiarEstado = async (id, estadoActual) => {

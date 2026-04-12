@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 import axios from 'axios';
+import { handleAxiosAuthError } from '../../../utils/auth';
 import './HomeDocentes.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const HomeDocentes = () => {
+  const navigate = useNavigate();
   const [userName, setUserName] = useState('');
   const [lastLogin, setLastLogin] = useState('Fecha desconocida');
 
@@ -35,6 +38,7 @@ const HomeDocentes = () => {
         }
 
       } catch (error) {
+        if (handleAxiosAuthError(error, navigate)) return;
         console.error('Error al obtener los datos del usuario:', error);
       }
     };

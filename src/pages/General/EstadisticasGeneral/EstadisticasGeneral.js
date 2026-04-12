@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
+import { handleAuthError } from '../../../utils/auth';
 import { FaDownload } from 'react-icons/fa';
 import * as XLSX from 'xlsx'; // Librería para exportar a Excel
 import './EstadisticasGeneral.css';
@@ -18,6 +20,7 @@ const ASSISTANTS = [
 ];
 
 const EstadisticasGeneral = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,6 +40,7 @@ const EstadisticasGeneral = () => {
           }
         });
 
+        if (handleAuthError(response, navigate)) return;
         if (!response.ok) throw new Error(`Error en la API: ${response.statusText}`);
         const data = await response.json();
 

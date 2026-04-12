@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { handleAuthError } from '../../utils/auth';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import Navbar from '../../components/Navbar/Navbar';
 import './HomePage.css';
@@ -74,11 +75,7 @@ const continueLastSession = () => {
         body: JSON.stringify({ patientId: randomAssistant.id }),
       });
 
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
-        return;
-      }
+      if (handleAuthError(response, navigate)) return;
 
       const data = await response.json();
 

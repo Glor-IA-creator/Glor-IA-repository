@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
+import { handleAuthError } from '../../../utils/auth';
 import './EstadisticasDocentes.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -16,6 +18,7 @@ const ASSISTANTS = [
 ];
 
 const EstadisticasDocentes = () => {
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -32,6 +35,8 @@ const EstadisticasDocentes = () => {
           }
         });
 
+        if (handleAuthError(response, navigate)) return;
+
         const data = await response.json();
 
         if (Array.isArray(data)) {
@@ -44,6 +49,8 @@ const EstadisticasDocentes = () => {
                 'Authorization': `Bearer ${token}`
               }
             });
+
+            if (handleAuthError(chatResponse, navigate)) return null;
 
             const chatData = await chatResponse.json();
             const threads = Array.isArray(chatData) ? chatData : [];

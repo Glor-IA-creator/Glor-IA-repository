@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
 import axios from 'axios';
+import { handleAxiosAuthError } from '../../../utils/auth';
 import './HomeGeneral.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const HomeGeneral = () => {
+  const navigate = useNavigate();
   const [userName, setUserName] = useState('');
   const [lastLogin, setLastLogin] = useState('Fecha desconocida');
 
@@ -35,6 +38,7 @@ const HomeGeneral = () => {
         }
 
       } catch (error) {
+        if (handleAxiosAuthError(error, navigate)) return;
         console.error('Error al obtener los datos del usuario:', error);
       }
     };

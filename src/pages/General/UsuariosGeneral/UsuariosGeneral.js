@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GeneralNavbar from '../../../components/GeneralNavbar/GeneralNavbar';
+import { handleAuthError } from '../../../utils/auth';
 import './UsuariosGeneral.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const UsuariosGeneral = () => {
+  const navigate = useNavigate();
   const [selectedProfile, setSelectedProfile] = useState('3'); // 3: Estudiantes, 2: Docentes
   const [estudiantes, setEstudiantes] = useState([]);
   const [secciones, setSecciones] = useState([]); // ✅ Agregar secciones
@@ -47,6 +50,8 @@ const UsuariosGeneral = () => {
           'Authorization': `Bearer ${token}` // ✅ Agregar el token en el header
         }
       });
+
+      if (handleAuthError(response, navigate)) return;
 
       if (!response.ok) {
         throw new Error(`⚠️ Error al obtener secciones: ${response.statusText}`);

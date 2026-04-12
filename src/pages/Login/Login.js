@@ -11,9 +11,15 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const sessionExpired = searchParams.get('expired') === '1';
+  const [sessionExpired] = useState(searchParams.get('expired') === '1');
 
   const API_URL = process.env.REACT_APP_API_URL;
+
+  useEffect(() => {
+    if (searchParams.get('expired')) {
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   // Verificar si el usuario ya está autenticado
   useEffect(() => {

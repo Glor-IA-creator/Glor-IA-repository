@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 import { FaCommentDots } from 'react-icons/fa';
-import ChatHistoryModal from './ChatHistoryModal'; // Importa el nuevo modal
+import ChatHistoryModal from './ChatHistoryModal';
+import { handleAuthError } from '../../../utils/auth';
 import './AlumnosDocentes.css';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const AlumnosDocentes = () => {
+  const navigate = useNavigate();
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedSection, setSelectedSection] = useState('');
   const [students, setStudents] = useState([]);
@@ -27,8 +30,12 @@ const AlumnosDocentes = () => {
         'Authorization': `Bearer ${token}`
       }
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (handleAuthError(res, navigate)) return Promise.reject('auth');
+        return res.json();
+      })
       .then((data) => {
+        if (!Array.isArray(data)) { setStudents([]); return; }
         setStudents(data);
 
         const years = [...new Set(data.flatMap(student => student.secciones.map(sec => sec.año)))];
@@ -37,7 +44,7 @@ const AlumnosDocentes = () => {
         setAvailableYears(years);
         setAvailableSections(sections);
       })
-      .catch((error) => console.error('Error al obtener estudiantes:', error));
+      .catch((error) => { if (error !== 'auth') console.error('Error al obtener estudiantes:', error); });
   }, []);
 
   const fetchChatHistory = (student) => {
@@ -49,13 +56,16 @@ const AlumnosDocentes = () => {
         'Authorization': `Bearer ${token}`
       }
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (handleAuthError(res, navigate)) return Promise.reject('auth');
+        return res.json();
+      })
       .then((data) => {
-        setChatHistory(data || []);
+        setChatHistory(Array.isArray(data) ? data : []);
         setSelectedStudent(student);
         setShowModal(true);
       })
-      .catch((error) => console.error('Error al obtener chats:', error));
+      .catch((error) => { if (error !== 'auth') console.error('Error al obtener chats:', error); });
   };
 
   const filteredStudents = students.filter(student => {

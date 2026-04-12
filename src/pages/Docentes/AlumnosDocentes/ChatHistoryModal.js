@@ -46,6 +46,17 @@ const fetchChatMessagesApi = async (threadId) => {
     `${process.env.REACT_APP_API_URL}/api/chat/obtener-mensajes?threadId=${threadId}`,
     { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } }
   );
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    window.location.href = '/?expired=1';
+    throw new Error('auth');
+  }
+  if (response.status === 503) {
+    throw new Error('thread_unavailable');
+  }
+  if (!response.ok) {
+    throw new Error('api_error');
+  }
   return response.json();
 };
 
@@ -121,8 +132,12 @@ const ChatHistoryModal = ({ chats, onClose, studentName }) => {
       // Se prioriza studentName; si no, se utiliza el nombre del usuario recibido en data.user
       setPdfUserName(studentName || data.user?.name || 'Usuario');
     } catch (error) {
+      if (error.message === 'auth') return;
       console.error('Error al obtener los mensajes del chat:', error);
-      setChatContent([{ sender: 'error', content: 'Error al cargar el contenido del chat.' }]);
+      const msg = error.message === 'thread_unavailable'
+        ? 'No se pudo cargar este historial. El hilo de conversación ya no está disponible.'
+        : 'Error al cargar el contenido del chat.';
+      setChatContent([{ sender: 'error', content: msg }]);
     }
   };
 

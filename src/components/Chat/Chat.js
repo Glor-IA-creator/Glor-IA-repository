@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { handleAuthError } from '../../utils/auth';
 import './Chat.css';
 import { FiSend } from 'react-icons/fi';
 import ChatPatientDetails from './ChatPatientDetails';
@@ -35,11 +36,7 @@ const Chat = () => {
         }
       );
 
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
-        return;
-      }
+      if (handleAuthError(response, navigate)) return;
 
       if (!response.ok) {
         throw new Error('Error al cargar los mensajes del hilo.');
@@ -84,11 +81,7 @@ const Chat = () => {
         },
       });
 
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
-        return;
-      }
+      if (handleAuthError(response, navigate)) return;
 
       if (!response.ok) {
         throw new Error('Error al cargar el último hilo del asistente.');
@@ -132,11 +125,7 @@ const Chat = () => {
           },
         });
 
-        if (response.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/?expired=1');
-          return;
-        }
+        if (handleAuthError(response, navigate)) return;
 
         if (!response.ok) {
           throw new Error('Error al cargar el último hilo.');
@@ -191,11 +180,7 @@ const Chat = () => {
         }),
       });
 
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/?expired=1');
-        return;
-      }
+      if (handleAuthError(response, navigate)) return;
       
       const data = await response.json();
       
